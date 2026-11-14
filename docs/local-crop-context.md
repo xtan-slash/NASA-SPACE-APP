@@ -4,11 +4,21 @@ _Last reviewed: 14 November 2026_
 
 ## Purpose and limits
 
-This note collects official regional and university material that can help define a **candidate crop library** for the Harohalli, Karnataka pilot.
+This note collects official regional and university material that can help define a **candidate crop library** and illustrative comparison scenarios for Harohalli, Karnataka.
 
-It does **not** establish the crop currently grown on any specific farm, prove a crop rotation, or supply all parameters required by the scoring engine. Farm-level baseline rotations and soil properties must come from the farmer, a field visit, a soil-test report, or another traceable source.
+No farmer interview or farm-level crop history is available for this project. Therefore, no scenario in the prototype can be described as the existing rotation of a real Harohalli farm. The baseline is explicitly illustrative.
 
-## 1. Official Ramanagara / Bengaluru South district context
+The available sources identify regional crops and research systems. They do **not** establish the crop currently grown on a particular field, validate the exact crop sequences in the app, or supply every parameter required by the scoring engine.
+
+## 1. Agro-climatic zone: important geographic correction
+
+The University of Agricultural Sciences Bengaluru (UASB) agro-climatic zone page places Ramanagara district and Bengaluru South taluks, including Kanakapura, in **Agro-climatic Zone 5 — Eastern Dry Zone**. It describes Zone 5 as hot, moist, semi-arid, with average annual rainfall of 680–890 mm and predominantly red soils, with lateritic and alluvial soils also present. Its listed crops include ragi, maize, pulses, mulberry, groundnut, fruits, vegetables, and flowers.
+
+This matters because some earlier search results concerned **Zone 6 — Southern Dry Zone**. Zone 6 crop calendars must not be presented as if they were the exact Zone 5 calendar for Harohalli. Use Zone 5 sources wherever available and confirm the relevant taluk/field context before using a crop calendar.
+
+Source: https://www.uasbangalore.edu.in/en/agroclimatic-zones-uas-bangalore/
+
+## 2. Official Ramanagara / Bengaluru South district context
 
 The Government of Karnataka district Agriculture Department page (currently published under the Bengaluru South district portal) reports:
 - Agriculture area in the district: 114,000 ha
@@ -18,59 +28,66 @@ The Government of Karnataka district Agriculture Department page (currently publ
 
 The page describes district programmes for pulses, nutri-cereals, minor millets, rainfed farming, farm ponds/rainwater conservation, and micro-irrigation. It names redgram in a pulse programme and lists foxtail, kodo, proso, browntop, little, and barnyard millets under a minor-millet programme.
 
-**Age/coverage caveat:** the same page includes programme statistics explicitly referring to 2019–20. Treat those statistics as historical context, not current production figures or a current crop census. The district-wide rainfall average is not a substitute for the selected farm's climate history.
+**Age/coverage caveat:** the same page includes programme statistics explicitly referring to 2019–20. Treat those statistics as historical context, not current production figures or a current crop census. District-wide rainfall is not a substitute for the selected farm's NASA POWER history or a local rain gauge.
 
 Source: https://ramanagara.nic.in/en/agriculture-department/
 
-## 2. University of Agricultural Sciences Bengaluru (UASB) crop production context
+## 3. UAS Bengaluru dryland research relevant to Zones IV, V and VI
 
-UAS Bengaluru's 2025 document, *New Technologies Recommended for Inclusion in Package of Practices*, describes technologies for crops and different zones under the university's jurisdiction. Examples include:
-- Small millets: little millet, proso millet, and barnyard millet
-- Groundnut
-- Finger millet (ragi)
-- Maize and baby corn
-- Niger
-- Sunflower
-- Rice
-- Soybean
-- Sugarcane and cotton
-- Protected-cultivation vegetables, including French bean, brinjal, broccoli, capsicum, pole beans, tomato, lettuce, palak, and spinach
+UAS Bengaluru's GKVK Dryland Agriculture unit states that its AICRP for Dryland Agriculture caters to dryland farmers in Southern Karnataka across Zones IV, V, and VI. Its published research accomplishments include:
+- Finger millet + pigeonpea intercropping (8:2 or 10:2)
+- Maize + pigeonpea intercropping (1:1)
+- Groundnut + pigeonpea intercropping (8:2)
+- Pigeonpea + field bean and pigeonpea + cowpea intercropping
+- Finger millet–soybean–maize rotation system
+- A statement that crop rotation with legumes resulted in higher finger millet yield
 
-The document includes particular crop-management and production recommendations. Those practices should not be transferred automatically to a specific Harohalli farm. Verify the relevant zone, crop variety, sowing window, soil, irrigation, and management context before using a recommendation.
+These are research findings and systems reported by the UAS unit. They are useful evidence for candidate strategies, but the exact practice, crop variety, soil, sowing window, and management need to be checked for the particular farm. Intercropping is not the same as a sequential crop rotation.
 
-Source: https://www.uasbangalore.edu.in/wp-content/uploads/2025/06/technologies-E-2025.pdf
+Source: https://www.uasbangalore.edu.in/en/dryland-agriculture-gkvk-bengaluru/
 
-## 3. Candidate crop-library shortlist
+## 4. Candidate crop-library shortlist
 
-Based on the district programme context and UAS Bengaluru crop document, the following are reasonable **candidates to investigate** for the prototype library, not confirmed crops for the pilot farm:
+Based on the Zone 5 description, district agriculture context, and UAS Bengaluru dryland research, these are candidates to investigate, not confirmed crops for a particular pilot farm:
 
-| Candidate | Why it is included in research shortlist | Validation still needed |
+| Candidate | Evidence in regional sources | Validation still needed |
 | --- | --- | --- |
-| Finger millet (ragi) | Named in nearby Bengaluru district crop context and UAS Bengaluru crop technologies | Farm's current use, season, variety, duration, water requirement, soil suitability |
-| Redgram / pigeonpea | Named in Ramanagara district pulse programme and UAS Bengaluru crop protection document | Local sowing window, duration, water requirement, soil suitability |
-| Groundnut | UAS Bengaluru crop production document includes organic-management technology | Farm-level suitability, variety, season, water and soil parameters |
-| Little millet | District minor-millet programme and UAS Bengaluru technology document | Local availability, variety, season, duration, soil/water parameters |
-| Proso millet | District minor-millet programme and UAS Bengaluru technology document | Local availability, variety, season, duration, soil/water parameters |
-| Barnyard millet | District minor-millet programme and UAS Bengaluru technology document | Local availability, variety, season, duration, soil/water parameters |
-| Foxtail millet | Named in district minor-millet programme | Local availability and validated crop parameters |
-| Kodo millet | Named in district minor-millet programme | Local availability and validated crop parameters |
-| Browntop millet | Named in district minor-millet programme | Local availability and validated crop parameters |
-| Maize | UAS Bengaluru document includes maize and baby-corn production technologies | Local production relevance, season, irrigation, crop parameters |
-| Niger | UAS Bengaluru document includes an organic-management technology | Local production relevance, season, variety, crop parameters |
-| Sunflower | UAS Bengaluru document includes an organic-management technology | Local production relevance, season, variety, crop parameters |
+| Finger millet (ragi) | Listed among Zone 5 crops; district crop context also identifies ragi as a major crop in nearby Bengaluru | Farm's current use, variety, sowing window, duration, water and soil parameters |
+| Maize | Listed among Zone 5 crops and used in UAS dryland cropping systems | Farm-level use, variety, season, irrigation, duration and crop parameters |
+| Pigeonpea / redgram (tur) | Pulses listed for Zone 5; district pulse programme names redgram; UAS dryland research uses pigeonpea | Local sowing window, variety, duration, water and soil parameters |
+| Groundnut | Listed among Zone 5 crops and included in UAS dryland intercropping systems | Farm-level use, variety, season, irrigation, duration and crop parameters |
+| Horsegram | UAS GKVK dryland page lists horsegram variety PHG-9 among promising improved pulse varieties | Whether it is grown/marketed locally, crop calendar and parameters |
+| Cowpea | UAS dryland research includes pigeonpea + cowpea systems | Local use, season, variety, duration and crop parameters |
+| Field bean (avare) | UAS dryland research includes pigeonpea + field bean systems | Local use, sowing window, variety, duration and crop parameters |
+| Small millets | District minor-millet programme includes foxtail, kodo, proso, browntop, little and barnyard millet | Local availability, variety, season, duration, water and soil parameters |
+| Sunflower | UAS Bengaluru crop technologies and dryland research mention sunflower | Local use, variety, season, duration and crop parameters |
 
-This list should be filtered by what the selected farmer actually grows, can access, wants to grow, and can sell. Do not populate the app with assumed crop parameters merely because a crop appears in a regional document.
+Do not add crop parameter values merely because a crop appears in a regional source. For every scored parameter, record the source, publication date, variety, season, unit, and geographic applicability.
 
-## 4. How to use these sources in the prototype
+## 5. Three illustrative comparison scenarios in the prototype
 
-1. Keep candidate crops in a research shortlist until a local source validates their relevance.
-2. For each crop parameter used by the score, record the source, publication date, variety, season, unit, and geographic applicability.
-3. Distinguish official package-of-practices guidance from farmer-reported practices and illustrative values.
-4. Ask the farmer for the current rotation sequence and the last few seasons' crop history.
-5. Ask for soil-test values and irrigation details where available.
-6. If actual farm information is unavailable during the demo, label the baseline as an illustrative scenario.
+Because there is no farmer-reported baseline, the app uses these **hypothetical research scenarios** for demonstrating the comparison workflow. They are not claims about what a Harohalli farmer currently grows and are not field recommendations.
 
-## 5. Next data-collection questions for a participating farmer
+| Scenario | Prototype sequence (2026–2029) | Why it is being tested | Important caveat |
+| --- | --- | --- | --- |
+| Illustrative baseline — ragi monocrop | Kharif: ragi each year | Ragi is a documented Zone 5 crop and regional crop candidate | Not an observed farm rotation; monocropping is a hypothetical reference for comparison |
+| Rotation candidate — ragi + horsegram | Kharif: ragi; Rabi: horsegram | Tests a cereal followed by a pulse; UAS reports that legume rotations increased finger millet productivity | The exact ragi–horsegram sequence and Rabi fit are not validated by the cited source |
+| Rotation candidate — maize + horsegram | Kharif: maize; Rabi: horsegram | Tests a different cereal–pulse sequence using crops appearing in regional/UAS material | The exact sequence is a comparison hypothesis, not a verified local package of practice |
+
+**Application limitation:** the current simulator assigns one crop per season. It cannot yet model an intercrop such as finger millet + pigeonpea (8:2) as two crops grown together in one field-season. Do not describe the current sequential scenarios as intercropping systems. Supporting true intercropping would require a deliberate data-model and scoring update.
+
+**Parameter limitation:** all crop records in the current prototype are marked as demo values. The farm's soil pH, soil organic carbon, texture, area, and irrigation profile are also illustrative demo inputs. The scores are only demonstrations of the deterministic scoring logic; they are not validated agronomic suitability results.
+
+## 6. How to use these sources in the prototype
+
+1. Keep candidate crops in a research shortlist until local relevance is validated.
+2. Prefer Zone 5 references for the Harohalli pilot. Do not silently transfer Zone 6 calendars.
+3. For each crop parameter used by the score, record source, publication date, variety, season, unit, and geographic applicability.
+4. Distinguish official research findings from farmer-reported practices and illustrative values.
+5. If farmer access becomes available, replace the illustrative baseline with the farmer's actual crop sequence and history.
+6. If no farmer history is available at submission, retain the illustrative label in the UI, report, and presentation.
+
+## 7. Next data-collection questions if a farmer becomes available
 
 - Which crop(s) were grown in each of the last 3–5 seasons?
 - Which season/months were they sown and harvested?
@@ -82,6 +99,8 @@ This list should be filtered by what the selected farmer actually grows, can acc
 
 ## References
 
+- UAS Bengaluru, Agro-climatic Zones: https://www.uasbangalore.edu.in/en/agroclimatic-zones-uas-bangalore/
 - Government of Karnataka, Ramanagara/Bengaluru South Agriculture Department: https://ramanagara.nic.in/en/agriculture-department/
-- University of Agricultural Sciences Bengaluru, *New Technologies Recommended for Inclusion in Package of Practices* (2025): https://www.uasbangalore.edu.in/wp-content/uploads/2025/06/technologies-E-2025.pdf
+- UAS Bengaluru, Dryland Agriculture, GKVK: https://www.uasbangalore.edu.in/en/dryland-agriculture-gkvk-bengaluru/
+- UAS Bengaluru, *New Technologies Recommended for Inclusion in Package of Practices* (2025): https://www.uasbangalore.edu.in/wp-content/uploads/2025/06/technologies-E-2025.pdf
 - NASA Space Apps Field Shift challenge: https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/
