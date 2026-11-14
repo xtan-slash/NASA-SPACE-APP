@@ -41,6 +41,7 @@ The current scoring logic is documented in [Scoring methodology](docs/scoring-me
 - [System architecture](docs/architecture.md)
 - [NASA data sources and provenance](docs/nasa-data-sources.md)
 - [Scoring methodology and assumptions](docs/scoring-methodology.md)
+- [Local crop context for Harohalli](docs/local-crop-context.md)
 
 ## Pilot location
 
