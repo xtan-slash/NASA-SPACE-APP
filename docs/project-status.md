@@ -52,7 +52,7 @@ _Last updated: 14 November 2026_
 5. Test protected server functions against unauthenticated and cross-user requests.
 6. Browser-test India location search, manual coordinates, and language switching.
 7. Review Nominatim usage-policy compliance and decide whether to add a controlled geocoding proxy/provider.
-8. Continue app-to-GitHub source mirroring if a repeatable export/sync path is established. This repository currently contains documentation only.
+8. Keep the `app/` source export synchronized with Base44 after future code changes; this is a snapshot, not an automatic two-way sync.
 
 ## Design status
 A Figma file has been created with an editable TerraShift AI dashboard frame and reusable KPI card component. Climate Explorer was the next planned design screen but has not yet been recorded as completed.
