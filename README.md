@@ -61,7 +61,7 @@ See [security and authentication](docs/security-and-authentication.md). The impl
 Figma product UI: https://www.figma.com/design/vm1vpLWyygL4nhNInOjrwK
 
 ## Repository scope
-This repository contains the project documentation. The live application source and Base44 entity schemas remain in the Base44 workspace and have **not** been exported or mirrored here. The documentation describes the current app state; it is not a substitute for the runnable source.
+The full tracked application source has now been exported from the Base44 workspace into [`app/`](app/), including routes, components, scoring and data logic, Base44 entity schemas, configuration, and the dependency lockfile. Generated build output, installed dependencies, local app-link metadata, and secrets are excluded. The repository root retains the challenge and project documentation. This is a source snapshot, not an automatic two-way sync with Base44.
 
 ## Local event
 Harohalli local event: https://www.spaceappschallenge.org/2026/local-events/harohalli/
