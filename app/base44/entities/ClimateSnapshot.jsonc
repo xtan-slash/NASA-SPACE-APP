@@ -1,0 +1,126 @@
+{
+  "name": "ClimateSnapshot",
+  "description": "Aggregated NASA POWER daily data for one farm point and date range, stored with its provenance so scores can be traced back to source.",
+  "type": "object",
+  "properties": {
+    "farm_id": {
+      "type": "string",
+      "description": "Farm the snapshot was requested for"
+    },
+    "location_label": {
+      "type": "string",
+      "description": "Human label for the point"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "Requested latitude"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Requested longitude"
+    },
+    "start_date": {
+      "type": "string",
+      "description": "First day requested, YYYYMMDD"
+    },
+    "end_date": {
+      "type": "string",
+      "description": "Last day requested, YYYYMMDD"
+    },
+    "source": {
+      "type": "string",
+      "description": "Data source name"
+    },
+    "source_url": {
+      "type": "string",
+      "description": "Exact NASA POWER request URL"
+    },
+    "retrieved_at": {
+      "type": "string",
+      "description": "ISO timestamp of retrieval"
+    },
+    "coverage_key": {
+      "type": "number",
+      "description": "Mean coverage of T2M and precipitation over expected days"
+    },
+    "payload_json": {
+      "type": "string",
+      "description": "Aggregated annual, monthly and seasonal summaries plus units and coverage"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ready",
+        "error"
+      ],
+      "enumColors": [
+        "green",
+        "red"
+      ],
+      "description": "Fetch status"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error returned by the API, if any"
+    }
+  },
+  "required": [
+    "farm_id",
+    "latitude",
+    "longitude",
+    "start_date",
+    "end_date"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "user"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

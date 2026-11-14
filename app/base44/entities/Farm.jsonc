@@ -1,0 +1,147 @@
+{
+  "name": "Farm",
+  "description": "A farm block whose soil profile, location and priorities drive the scenario scoring.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Farm or block name"
+    },
+    "district": {
+      "type": "string",
+      "description": "District and state"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "Latitude in decimal degrees (used for the NASA POWER point request)"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Longitude in decimal degrees (used for the NASA POWER point request)"
+    },
+    "area_ha": {
+      "type": "number",
+      "description": "Cropped area in hectares"
+    },
+    "soil_texture": {
+      "type": "string",
+      "enum": [
+        "sandy",
+        "sandy_loam",
+        "red_loam",
+        "loam",
+        "clay_loam",
+        "clay",
+        "vertisol"
+      ],
+      "enumColors": [
+        "yellow",
+        "gray",
+        "red",
+        "green",
+        "blue",
+        "purple",
+        "pink"
+      ],
+      "description": "Dominant surface soil texture class"
+    },
+    "soil_ph": {
+      "type": "number",
+      "description": "Soil pH (1:2.5 water). Leave empty if untested."
+    },
+    "soil_organic_carbon": {
+      "type": "number",
+      "description": "Soil organic carbon in percent. Leave empty if untested."
+    },
+    "irrigation": {
+      "type": "string",
+      "enum": [
+        "rainfed",
+        "supplemental",
+        "assured"
+      ],
+      "enumColors": [
+        "yellow",
+        "blue",
+        "green"
+      ],
+      "description": "Irrigation status; scoring assumes a fixed seasonal allowance per status"
+    },
+    "priorities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Farmer priorities used to guide scenario discussion (not part of the numeric score)"
+    },
+    "soil_source": {
+      "type": "string",
+      "description": "Provenance of the soil inputs, e.g. soil test lab and date, or 'demo input'"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free notes about the farm"
+    },
+    "is_demo": {
+      "type": "boolean",
+      "description": "True when the record is a demo input, not a real farm record"
+    }
+  },
+  "required": [
+    "name",
+    "latitude",
+    "longitude"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "user"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

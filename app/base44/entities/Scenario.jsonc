@@ -1,0 +1,115 @@
+{
+  "name": "Scenario",
+  "description": "A saved multi-year crop-rotation sequence with its scoring weights and last computed score.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Scenario name"
+    },
+    "farm_id": {
+      "type": "string",
+      "description": "Farm record this scenario belongs to"
+    },
+    "entries_json": {
+      "type": "string",
+      "description": "JSON array of {year, season, crop_id}"
+    },
+    "weights_json": {
+      "type": "string",
+      "description": "JSON object of dimension weights {soil, water, climate, diversity}"
+    },
+    "year_start": {
+      "type": "number",
+      "description": "First year of the sequence"
+    },
+    "year_end": {
+      "type": "number",
+      "description": "Last year of the sequence"
+    },
+    "seasons_count": {
+      "type": "number",
+      "description": "Number of cropped seasons in the sequence"
+    },
+    "crop_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Crop record ids used in the sequence"
+    },
+    "last_score": {
+      "type": "number",
+      "description": "Last computed overall score (0-100); null when data was insufficient"
+    },
+    "last_confidence": {
+      "type": "string",
+      "description": "Confidence level at last scoring (high / medium / low / none)"
+    },
+    "last_scored_at": {
+      "type": "string",
+      "description": "Timestamp of the last scoring run"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Why this rotation was proposed"
+    }
+  },
+  "required": [
+    "name",
+    "farm_id",
+    "entries_json"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "user"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

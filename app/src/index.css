@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 42 36% 97%;
+    --foreground: 150 22% 13%;
+    --card: 40 44% 99%;
+    --card-foreground: 150 22% 13%;
+    --popover: 40 44% 99%;
+    --popover-foreground: 150 22% 13%;
+    --primary: 148 30% 24%;
+    --primary-foreground: 42 40% 96%;
+    --secondary: 45 24% 93%;
+    --secondary-foreground: 150 20% 18%;
+    --muted: 45 22% 93%;
+    --muted-foreground: 150 8% 40%;
+    --accent: 38 62% 46%;
+    --accent-foreground: 40 45% 98%;
+    --destructive: 8 62% 46%;
+    --destructive-foreground: 40 45% 98%;
+    --border: 45 18% 87%;
+    --input: 45 18% 85%;
+    --ring: 148 30% 34%;
+    --chart-1: 148 34% 32%;
+    --chart-2: 38 64% 50%;
+    --chart-3: 197 42% 42%;
+    --chart-4: 14 58% 54%;
+    --chart-5: 88 30% 44%;
+    --radius: 0.85rem;
+    --font-heading: "Fraunces", Georgia, "Times New Roman", serif;
+    --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-display: "Fraunces", Georgia, serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  .dark {
+    --background: 150 16% 10%;
+    --foreground: 42 30% 94%;
+    --card: 150 14% 13%;
+    --card-foreground: 42 30% 94%;
+    --popover: 150 14% 13%;
+    --popover-foreground: 42 30% 94%;
+    --primary: 42 40% 92%;
+    --primary-foreground: 150 20% 12%;
+    --secondary: 150 10% 19%;
+    --secondary-foreground: 42 30% 94%;
+    --muted: 150 10% 19%;
+    --muted-foreground: 42 12% 66%;
+    --accent: 38 58% 52%;
+    --accent-foreground: 150 20% 10%;
+    --destructive: 8 58% 48%;
+    --destructive-foreground: 42 30% 94%;
+    --border: 150 9% 24%;
+    --input: 150 9% 26%;
+    --ring: 42 34% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    background-image:
+      radial-gradient(55rem 30rem at 88% -8%, hsl(38 62% 78% / 0.28), transparent 65%),
+      radial-gradient(45rem 32rem at 4% 4%, hsl(148 30% 74% / 0.26), transparent 62%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-heading;
+    font-variation-settings: "SOFT" 0, "WONK" 0;
+    letter-spacing: -0.015em;
+  }
+
+  ::selection {
+    background: hsl(38 62% 62% / 0.35);
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-2xl border border-border/80 bg-card/85 backdrop-blur-sm;
+    box-shadow: 0 1px 2px hsl(150 22% 13% / 0.04), 0 16px 34px -26px hsl(150 22% 13% / 0.45);
+  }
+
+  .panel-flat {
+    @apply rounded-xl border border-border/70 bg-card/60;
+  }
+
+  .kicker {
+    @apply font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground;
+  }
+
+  .metric {
+    @apply font-mono tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .hairline {
+    @apply border-t border-border/70;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-secondary/60 px-2.5 py-1 text-[11px] font-medium text-secondary-foreground;
+  }
+
+  .prose-note {
+    @apply text-[13px] leading-relaxed text-muted-foreground;
+  }
+}
+
+.reveal {
+  animation: reveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.scrollbar-slim::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-slim::-webkit-scrollbar-thumb {
+  background: hsl(150 10% 70% / 0.5);
+  border-radius: 999px;
+}
