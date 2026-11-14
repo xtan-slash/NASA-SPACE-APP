@@ -1,61 +1,68 @@
 # TerraShift AI
 ### Field Shift: Adapting Farms with NASA Data | NASA Space Apps Challenge 2026
 
-TerraShift AI is a farmer-centred decision-support web app for exploring crop-rotation strategies under changing climate and water conditions. The pilot focus is Harohalli, Karnataka, India. Farm locations, crops, soil inputs, and priorities are designed to be configurable.
+TerraShift AI is an AI-assisted, explainable web app for exploring crop-rotation strategies using NASA climate context and farm-entered information. Harohalli, Karnataka is the original pilot, while farm setup now supports locations across India.
 
-> **Decision support, not a prescription.** Scores are explainable suitability indicators based on the inputs and assumptions shown by the app. They are not validated yield, income, nutrient-balance, or guaranteed soil-improvement predictions. Farmers and local agricultural experts remain the decision-makers.
+> **Decision support, not a prescription.** Scores are prototype suitability indicators based on disclosed inputs and assumptions. They are not validated yield, income, nutrient-balance, or guaranteed soil-improvement predictions. Farmers and local agricultural experts remain the decision-makers.
 
-## Challenge requirements we are addressing
-
-The official Field Shift brief asks teams to combine NASA Earth observations with local soil information, crop characteristics, and farmer priorities. It specifically asks teams to compare at least three rotation strategies, including the existing rotation, and explain evidence, potential benefits, information gaps, and risks.
+## Challenge
+The official Field Shift brief asks teams to combine NASA Earth observations with local soil information, crop characteristics, and farmer priorities. It asks for comparison of at least three rotation strategies, including the existing rotation where known, and an explanation of evidence, potential benefits, information gaps, and risks.
 
 Official brief: https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/
 
-## Current implementation
+## Current application
+The runnable app is hosted in Base44 and built with TanStack Start, React 19, and the Base44 SDK.
 
-The working web app is built and hosted in Base44 using TanStack Start, React 19, and the Base44 SDK.
+- Farm setup with location search and manual coordinates for locations across India.
+- Soil, irrigation, and farmer-priority inputs with provenance/demo disclosures.
+- Configurable crop library.
+- NASA POWER Daily Point API integration for historical climate context.
+- Daily data parsing, annual/monthly/seasonal aggregation, and missing-data coverage.
+- Deterministic scoring across soil, water, climate, and crop diversity.
+- Scenario simulator, comparison view, methodology page, and evidence-grounded AI advisor.
+- English, Hindi, and Kannada language options.
+- Sign-in, registration, password reset, MFA routes, signed-in app gate, and owner-based data access rules.
 
-- Farm setup with location, soil properties, irrigation, and farmer priorities.
-- Configurable crop records with crop family, season, water demand, pH and temperature ranges, and rotation traits.
-- NASA POWER Daily Point API integration for historical daily agroclimatology data.
-- Annual, monthly, and seasonal aggregation with parameter coverage and missing-data tracking.
-- Deterministic rotation scoring across soil, water, climate, and crop diversity.
-- Multi-scenario comparison, simulator, method notes, and an AI advisor grounded in computed score evidence.
-
-**Repository status:** this GitHub repository currently contains project documentation. The runnable application source is in the Base44 app and has not yet been mirrored into this repository.
+**Base44 app:** https://app.base44.com/apps/6af80c5819da5107aefce1e2/editor/preview
 
 ## NASA data
+**Integrated:** NASA POWER Daily Point API (Agroclimatology community). See [NASA data sources](docs/nasa-data-sources.md).
 
-**Integrated now:** NASA POWER Daily Point API (Agroclimatology community). See [NASA data sources](docs/nasa-data-sources.md).
+The app requests T2M, T2M_MAX, T2M_MIN, PRECTOTCORR, RH2M, GWETROOT, ALLSKY_SFC_SW_DWN, and WS2M. The current pilot history is 2020–2025. This is historical context, not a forecast for 2026–2029.
 
-**Potential extensions, not yet integrated:** SMAP, GPM/IMERG, Landsat, MODIS/VIIRS, ECOSTRESS, and SRTM. Their use must be verified for the Harohalli pilot and implemented with clear spatial/temporal provenance before being described as live data.
+**Not yet integrated:** SMAP, GPM/IMERG, Landsat, MODIS/VIIRS, ECOSTRESS, and SRTM. Do not present these as live app data until implemented and verified.
 
 NASA POWER API docs: https://power.larc.nasa.gov/docs/services/api/temporal/daily/
 
+## Pilot and agronomic context
+The original demo point is 12.68° N, 77.48° E. It is not a surveyed farm boundary or verified field centroid. Harohalli/Ramanagara is treated as UAS Bengaluru Agro-climatic Zone 5, Eastern Dry Zone, in the current local-context note.
+
+No farmer interview or verified farm crop history is available. The current ragi monocrop, ragi–horsegram, and maize–horsegram scenarios are illustrative hypotheses, not a real farmer baseline or validated recommendations. The simulator currently models one crop per season and does not model intercropping.
+
+See [local crop context](docs/local-crop-context.md).
+
 ## Scoring and limitations
+The deterministic scoring engine is documented in [scoring methodology](docs/scoring-methodology.md). Default normalized weights are Soil 30%, Water 30%, Climate 25%, and Diversity 15%. Heuristics and assumptions are disclosed in the method. Demo crop parameters and demo soil inputs must not be presented as verified facts.
 
-The current scoring logic is documented in [Scoring methodology](docs/scoring-methodology.md). Crop parameters are configurable. Seed/demo crop parameters are illustrative unless their source notes provide a verified reference. Soil properties are user-supplied farm inputs, not retrieved from NASA POWER.
+## Security and account model
+Farm, Scenario, and ClimateSnapshot records use owner/admin access rules. The shared Crop library remains publicly readable, while crop create/update/delete are admin-only. The app's protected workspace requires sign-in; climate loading and AI scenario explanation backend functions require an authenticated user.
 
-## Project documentation
+See [security and authentication](docs/security-and-authentication.md). The implementation has passed lint/build, but a fresh security scan and multi-user/anonymous access tests remain outstanding. Do not treat the configuration as independently security-audited.
 
+## Documentation
 - [System architecture](docs/architecture.md)
 - [NASA data sources and provenance](docs/nasa-data-sources.md)
-- [Scoring methodology and assumptions](docs/scoring-methodology.md)
-- [Local crop context for Harohalli](docs/local-crop-context.md)
+- [Scoring methodology](docs/scoring-methodology.md)
+- [Local crop context](docs/local-crop-context.md)
+- [Security and authentication](docs/security-and-authentication.md)
+- [Current project status and next steps](docs/project-status.md)
 
-## Pilot location
+## Design
+Figma product UI: https://www.figma.com/design/vm1vpLWyygL4nhNInOjrwK
 
-Harohalli, Karnataka, India. The pilot coordinates currently prefilled in the app are 12.68° N, 77.48° E and are a demo point, not a surveyed farm boundary or verified field centroid.
-
-## Development priorities
-
-1. Validate the pilot coordinates and replace demo farm inputs with clearly sourced local data.
-2. Ensure the comparison view presents at least three strategies, including the existing farmer rotation.
-3. Validate crop parameters with locally relevant agricultural sources or qualified agronomists.
-4. Improve NASA data provenance, coverage, uncertainty, and spatial-resolution explanations.
-5. Add one additional NASA dataset only when it can be integrated and explained reliably.
-6. Test the full app flow and prepare a concise project demonstration.
+## Repository scope
+This repository contains the project documentation. The live application source and Base44 entity schemas remain in the Base44 workspace and have **not** been exported or mirrored here. The documentation describes the current app state; it is not a substitute for the runnable source.
 
 ## Local event
-
-Harohalli local event information: https://www.spaceappschallenge.org/2026/local-events/harohalli/
+Harohalli local event: https://www.spaceappschallenge.org/2026/local-events/harohalli/
+Global offers: https://www.spaceappschallenge.org/2026/global-offers/
