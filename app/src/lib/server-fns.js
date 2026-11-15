@@ -118,8 +118,8 @@ export const loadClimateSnapshot = createServerFn({ method: "POST" })
     z.object({
       farmId: z.string().min(1).max(64),
       locationLabel: z.string().max(120).optional(),
-      latitude: z.number().min(-90).max(90),
-      longitude: z.number().min(-180).max(180),
+      latitude: z.number().min(6.0).max(37.2),
+      longitude: z.number().min(68.0).max(97.5),
       startDate: z.string().regex(DATE_RE).optional(),
       endDate: z.string().regex(DATE_RE).optional(),
       dataMode: z.enum(["recent_30d", "recent_90d", "historical_5y", "historical_10y"]).optional(),
