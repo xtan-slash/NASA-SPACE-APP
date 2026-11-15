@@ -1,0 +1,208 @@
+{
+  "name": "UserCrop",
+  "description": "A private crop record or personal override of a shared master Crop record.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Crop name"
+    },
+    "local_name": {
+      "type": "string",
+      "description": "Local / common name"
+    },
+    "family": {
+      "type": "string",
+      "description": "Botanical family, used for rotation diversity"
+    },
+    "rotation_role": {
+      "type": "string",
+      "enum": [
+        "cereal",
+        "legume",
+        "oilseed",
+        "vegetable",
+        "fodder",
+        "cash"
+      ],
+      "enumColors": [
+        "yellow",
+        "green",
+        "blue",
+        "red",
+        "purple",
+        "pink"
+      ],
+      "description": "Role of the crop in the rotation"
+    },
+    "season": {
+      "type": "string",
+      "enum": [
+        "kharif",
+        "rabi",
+        "summer"
+      ],
+      "enumColors": [
+        "green",
+        "blue",
+        "yellow"
+      ],
+      "description": "Season the crop is normally grown in"
+    },
+    "duration_days": {
+      "type": "number",
+      "description": "Typical crop duration in days (informational)"
+    },
+    "water_need_mm": {
+      "type": "number",
+      "description": "Seasonal crop water demand in mm"
+    },
+    "ph_min": {
+      "type": "number",
+      "description": "Lower pH of the suitable range"
+    },
+    "ph_max": {
+      "type": "number",
+      "description": "Upper pH of the suitable range"
+    },
+    "temp_opt_min": {
+      "type": "number",
+      "description": "Lower bound of optimum mean temperature range, \u00b0C"
+    },
+    "temp_opt_max": {
+      "type": "number",
+      "description": "Upper bound of optimum mean temperature range, \u00b0C"
+    },
+    "heat_threshold_c": {
+      "type": "number",
+      "description": "Daily maximum temperature counted as heat stress, \u00b0C"
+    },
+    "oc_need": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "enumColors": [
+        "green",
+        "yellow",
+        "red"
+      ],
+      "description": "Organic-carbon demand level; maps to 0.45 / 0.65 / 0.85 % thresholds"
+    },
+    "texture_preferred": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Soil texture classes scored as fully suitable"
+    },
+    "texture_marginal": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Soil texture classes scored as marginal"
+    },
+    "n_fixing": {
+      "type": "boolean",
+      "description": "Legume (biological nitrogen fixing)"
+    },
+    "flood_sensitive": {
+      "type": "boolean",
+      "description": "Crop is sensitive to heavy-rain / waterlogging days"
+    },
+    "source_note": {
+      "type": "string",
+      "description": "Where the parameter values came from, or an explicit demo-value warning"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Agronomic notes"
+    },
+    "published_water_reference_mm": {
+      "type": "number",
+      "description": "Published crop water requirement reference in mm. Informational only; not used by scoring."
+    },
+    "published_duration_reference_days": {
+      "type": "number",
+      "description": "Published crop duration reference in days. Informational only; not used by scoring."
+    },
+    "reference_source_url": {
+      "type": "string",
+      "description": "URL of the published source for the reference values."
+    },
+    "reference_context": {
+      "type": "string",
+      "description": "Conditions and caveats applying to published water and duration reference values."
+    },
+    "published_ph_reference_min": {
+      "type": "number",
+      "description": "Published lower pH reference; informational only and not used by scoring."
+    },
+    "published_ph_reference_max": {
+      "type": "number",
+      "description": "Published upper pH reference; informational only and not used by scoring."
+    },
+    "published_texture_reference": {
+      "type": "string",
+      "description": "Published soil texture guidance; informational only and not used by scoring."
+    },
+    "ph_reference_source_url": {
+      "type": "string",
+      "description": "Source URL for published pH reference."
+    },
+    "texture_reference_source_url": {
+      "type": "string",
+      "description": "Source URL for published soil texture reference."
+    },
+    "ph_reference_context": {
+      "type": "string",
+      "description": "Conditions and caveats applying to published pH reference."
+    },
+    "texture_reference_context": {
+      "type": "string",
+      "description": "Conditions and caveats applying to published soil texture reference."
+    },
+    "is_demo": {
+      "type": "boolean",
+      "description": "True when one or more scoring parameters remain illustrative demo values"
+    },
+    "master_crop_id": {
+      "type": "string",
+      "description": "Optional ID of the shared master Crop record this personal record overrides."
+    }
+  },
+  "required": [
+    "name",
+    "water_need_mm",
+    "ph_min",
+    "ph_max"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "user"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
