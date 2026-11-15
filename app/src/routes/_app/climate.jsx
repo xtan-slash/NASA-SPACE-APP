@@ -9,14 +9,8 @@ import MonthlyClimateChart from "@/components/climate/MonthlyClimateChart";
 import AnnualClimateChart from "@/components/climate/AnnualClimateChart";
 import SeasonTable from "@/components/climate/SeasonTable";
 import SnapshotManifest from "@/components/climate/SnapshotManifest";
+import RecentClimateMonitor from "@/components/climate/RecentClimateMonitor";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useActiveFarm, useFarms, useSnapshots, parseSnapshot } from "@/lib/data";
 import { loadClimateSnapshot } from "@/lib/server-fns";
 import { POWER_PARAMS } from "@/lib/catalog";
@@ -26,34 +20,45 @@ export const Route = createFileRoute("/_app/climate")({
   head: () => ({
     meta: [
       { title: "NASA climate data · TerraShift AI" },
-      { name: "description", content: "Live NASA POWER daily point data for the farm location, with units, requested dates, coverage and retrieval provenance." },
+      { name: "description", content: "Near-real-time and historical NASA POWER daily point data for the farm location, with units, coverage and retrieval provenance." },
     ],
   }),
   component: ClimatePage,
 });
 
-const YEARS = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
+const WINDOWS = [
+  { value: "recent_30d", label: "30 days", group: "recent" },
+  { value: "recent_90d", label: "90 days", group: "recent" },
+  { value: "historical_5y", label: "5 years", group: "historical" },
+  { value: "historical_10y", label: "10 years", group: "historical" },
+];
 
 function ClimatePage() {
   const { t } = useI18n();
   const { farms, loading: farmsLoading } = useFarms();
   const { farm, ready } = useActiveFarm(farms, farmsLoading);
-  const { latest, reload } = useSnapshots(farm?.id);
-  const [startYear, setStartYear] = useState(2020);
-  const [endYear, setEndYear] = useState(2025);
+  const { snapshots, reload } = useSnapshots(farm?.id);
+  const [viewMode, setViewMode] = useState("recent_30d");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [payload, setPayload] = useState(null);
   const [snapshotMeta, setSnapshotMeta] = useState(null);
-  const autoTried = useRef(null);
+  const autoTried = useRef(new Set());
   const run = useServerFn(loadClimateSnapshot);
 
-  useEffect(() => {
-    setPayload(parseSnapshot(latest));
-    setSnapshotMeta(latest || null);
-  }, [latest]);
+  const selectedSnapshot = snapshots.find((item) => item.status === "ready" && item.data_mode === viewMode) || null;
 
-  const fetchData = useCallback(async () => {
+  useEffect(() => {
+    if (selectedSnapshot) {
+      setPayload(parseSnapshot(selectedSnapshot));
+      setSnapshotMeta(selectedSnapshot);
+    } else {
+      setPayload(null);
+      setSnapshotMeta(null);
+    }
+  }, [selectedSnapshot]);
+
+  const fetchData = useCallback(async (mode = viewMode, forceRefresh = false) => {
     if (!farm) return;
     setLoading(true);
     setError(null);
@@ -64,8 +69,8 @@ function ClimatePage() {
           locationLabel: farm.name,
           latitude: Number(farm.latitude),
           longitude: Number(farm.longitude),
-          startDate: `${startYear}0101`,
-          endDate: `${endYear}1231`,
+          dataMode: mode,
+          forceRefresh,
         },
       });
       if (!res?.ok) {
@@ -75,77 +80,62 @@ function ClimatePage() {
       setPayload(res.snapshot.payload);
       setSnapshotMeta(res.snapshot);
       await reload();
-      toast.success("NASA POWER data loaded");
+      toast.success(t("NASA POWER data loaded"));
     } catch (err) {
       setError(err?.message || "The NASA POWER request failed.");
     } finally {
       setLoading(false);
     }
-  }, [farm, run, startYear, endYear, reload]);
+  }, [farm, run, viewMode, reload, t]);
 
-  // Load once automatically so the first visit is not an empty page.
   useEffect(() => {
-    if (!ready || !farm || latest || loading) return;
-    if (autoTried.current === farm.id) return;
-    autoTried.current = farm.id;
-    fetchData();
-  }, [ready, farm, latest, loading, fetchData]);
+    if (!ready || !farm || loading || selectedSnapshot) return;
+    const key = farm.id + ":" + viewMode;
+    if (autoTried.current.has(key)) return;
+    autoTried.current.add(key);
+    fetchData(viewMode);
+  }, [ready, farm, loading, selectedSnapshot, viewMode, fetchData]);
 
   if (!farmsLoading && farms.length === 0) {
     return (
       <div className="space-y-6">
-        <PageHeader kicker="Step 3 · Earth observation" title="NASA climate data" />
-        <Notice tone="warn" title="Add a farm first">
-          NASA POWER is queried for a point, so the prototype needs a farm location.{" "}
+        <PageHeader kicker="Step 3 · Earth observation" title={t("NASA climate data")} />
+        <Notice tone="warn" title={t("Add a farm first")}>
+          {t("NASA POWER is queried for a point, so the prototype needs a farm location.")}{" "}
           <Link to="/farm" className="font-medium text-primary hover:underline">
-            Set up a farm →
+            {t("Set up a farm")} →
           </Link>
         </Notice>
       </div>
     );
   }
 
+  const isRecent = viewMode.startsWith("recent_");
+
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Step 3 · Earth observation"
-        title="NASA climate data"
-        description="Daily point data from the NASA POWER API for this farm's coordinates. Every number on this page is returned by the API for the requested window and reported with its units, coverage and retrieval time."
+        kicker={t("Step 3 · Earth observation")}
+        title={t("NASA climate data")}
+        description={t("Explore near-real-time climate monitoring alongside multi-year historical context for this farm's NASA POWER grid point.")}
         actions={
-          <>
-            <div className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-2 py-1">
-              <span className="pl-1 text-[10.5px] uppercase tracking-wider text-muted-foreground">{t("From")}</span>
-              <Select value={String(startYear)} onValueChange={(v) => setStartYear(Number(v))}>
-                <SelectTrigger className="h-7 w-[74px] border-0 px-1 text-[12px] shadow-none">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {YEARS.map((y) => (
-                    <SelectItem key={y} value={String(y)} disabled={y >= endYear}>
-                      {y}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground">{t("to")}</span>
-              <Select value={String(endYear)} onValueChange={(v) => setEndYear(Number(v))}>
-                <SelectTrigger className="h-7 w-[74px] border-0 px-1 text-[12px] shadow-none">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {YEARS.map((y) => (
-                    <SelectItem key={y} value={String(y)} disabled={y <= startYear}>
-                      {y}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button onClick={fetchData} disabled={loading || !farm} className="gap-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            {WINDOWS.map((window) => (
+              <Button
+                key={window.value}
+                size="sm"
+                variant={viewMode === window.value ? "default" : "outline"}
+                onClick={() => setViewMode(window.value)}
+                disabled={loading}
+              >
+                {t(window.label)}
+              </Button>
+            ))}
+            <Button onClick={() => fetchData(viewMode, true)} disabled={loading || !farm} className="gap-1.5">
               {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-              {loading ? t("Requesting…") : payload ? t("Refresh from NASA") : t("Fetch from NASA")}
+              {loading ? t("Requesting…") : t("Refresh from NASA")}
             </Button>
-          </>
+          </div>
         }
       >
         {farm && (
@@ -164,9 +154,13 @@ function ClimatePage() {
         )}
       </PageHeader>
 
+      <Notice tone="info" title={t("Near-real-time, not instant live data")}>
+        {t("NASA POWER is a gridded data service with publication delays. Recent windows end seven days before the current date, and the latest valid date can differ by parameter. This is not a field sensor or weather forecast.")}
+      </Notice>
+
       {error && (
-        <Notice tone="danger" title="NASA POWER request failed">
-          {error} No substitute values are shown — the page stays empty rather than displaying invented data.
+        <Notice tone="danger" title={t("NASA POWER request failed")}>
+          {error} {t("No substitute values are shown.")}
         </Notice>
       )}
 
@@ -176,8 +170,7 @@ function ClimatePage() {
           <div>
             <p className="text-[13px] font-medium">{t("Requesting daily point data")}</p>
             <p className="text-[11.5px] text-muted-foreground">
-              8 parameters × {YEARS.includes(startYear) && YEARS.includes(endYear) ? (endYear - startYear + 1) * 365 : "—"}{" "}
-              days from NASA POWER, then aggregating by month and season.
+              {isRecent ? t("Loading recent daily climate values.") : t("Loading complete historical calendar years.")}
             </p>
           </div>
         </div>
@@ -187,80 +180,66 @@ function ClimatePage() {
         <div className="panel p-5">
           <h2 className="text-[16px] font-medium">{t("What will be requested")}</h2>
           <p className="prose-note mt-1">
-            The AG (agroclimatology) community daily point endpoint for this farm's coordinates. Nothing is
-            pre-baked into the prototype — the table fills in from the live response.
+            {t("The AG (agroclimatology) community daily point endpoint for this farm's coordinates. Missing values remain gaps and are not interpolated.")}
           </p>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {POWER_PARAMS.map((p) => (
-              <div
-                key={p.code}
-                className="flex items-baseline justify-between gap-3 rounded-lg border border-border/70 bg-secondary/30 px-3 py-2"
-              >
+              <div key={p.code} className="flex items-baseline justify-between gap-3 rounded-lg border border-border/70 bg-secondary/30 px-3 py-2">
                 <div>
                   <p className="metric text-[12px] font-medium">{p.code}</p>
-                  <p className="text-[10.5px] text-muted-foreground">{p.label}</p>
+                  <p className="text-[10.5px] text-muted-foreground">{t(p.label)}</p>
                 </div>
                 <span className="metric text-[11px] text-muted-foreground">{p.unit}</span>
               </div>
             ))}
           </div>
-          <Button className="mt-4 gap-1.5" onClick={fetchData} disabled={loading || !farm}>
-            <RefreshCw className="h-3.5 w-3.5" /> {t("Fetch from NASA POWER")}
-          </Button>
         </div>
       )}
 
       {payload && (
         <>
           <SnapshotManifest snapshot={snapshotMeta} payload={payload} />
+          {isRecent ? (
+            <RecentClimateMonitor payload={payload} />
+          ) : (
+            <>
+              <div className="grid gap-4 lg:grid-cols-2">
+                <div className="panel p-4">
+                  <div className="flex items-baseline justify-between">
+                    <h2 className="text-[15px] font-medium">{t("Monthly climatology")}</h2>
+                    <span className="kicker">mm · °C</span>
+                  </div>
+                  <p className="prose-note mt-1">
+                    {t("Mean monthly rainfall total and mean daily temperature across")} {payload.years_covered} {t("years")}.
+                  </p>
+                  <div className="mt-3"><MonthlyClimateChart monthly={payload.monthly} /></div>
+                </div>
+                <div className="panel p-4">
+                  <div className="flex items-baseline justify-between">
+                    <h2 className="text-[15px] font-medium">{t("Year by year")}</h2>
+                    <span className="kicker">mm · days</span>
+                  </div>
+                  <p className="prose-note mt-1">{t("Annual rainfall and the count of days with maximum temperature at or above 35 °C.")}</p>
+                  <div className="mt-3"><AnnualClimateChart annual={payload.annual} /></div>
+                </div>
+              </div>
+
+              <div className="panel p-4">
+                <div className="flex items-baseline justify-between">
+                  <h2 className="text-[15px] font-medium">{t("Season windows used by the scoring engine")}</h2>
+                  <span className="kicker">NASA POWER · derived</span>
+                </div>
+                <div className="mt-3"><SeasonTable seasons={payload.seasons} /></div>
+              </div>
+            </>
+          )}
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <div className="panel p-4">
-              <div className="flex items-baseline justify-between">
-                <h2 className="text-[15px] font-medium">{t("Monthly climatology")}</h2>
-                <span className="kicker">mm · °C</span>
-              </div>
-              <p className="prose-note mt-1">
-                Mean monthly rainfall total and mean daily temperature across {payload.years_covered} years.
-              </p>
-              <div className="mt-3">
-                <MonthlyClimateChart monthly={payload.monthly} />
-              </div>
-            </div>
-            <div className="panel p-4">
-              <div className="flex items-baseline justify-between">
-                <h2 className="text-[15px] font-medium">{t("Year by year")}</h2>
-                <span className="kicker">mm · days</span>
-              </div>
-              <p className="prose-note mt-1">
-                Annual rainfall and the count of days with maximum temperature at or above 35 °C.
-              </p>
-              <div className="mt-3">
-                <AnnualClimateChart annual={payload.annual} />
-              </div>
-            </div>
-          </div>
-
-          <div className="panel p-4">
-            <div className="flex items-baseline justify-between">
-              <h2 className="text-[15px] font-medium">{t("Season windows used by the scoring engine")}</h2>
-              <span className="kicker">NASA POWER · derived</span>
-            </div>
-            <div className="mt-3">
-              <SeasonTable seasons={payload.seasons} />
-            </div>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-2">
-            <Notice tone="info" title="What this dataset is">
-              NASA POWER distributes meteorology derived from assimilation models (MERRA-2) and satellite
-              inputs on a coarse grid. It is not a farm measurement, and the value for a point represents the
-              model grid cell containing that point.
+            <Notice tone="info" title={t("What this dataset is")}>
+              {t("NASA POWER distributes meteorology derived from assimilation models and satellite inputs on a coarse grid. It is not a farm measurement, and the value for a point represents the model grid cell containing that point.")}
             </Notice>
-            <Notice tone="warn" title="What it cannot tell you">
-              No field-level soil moisture, canopy condition or yield is inferred here. SMAP soil moisture and
-              MODIS vegetation indices are listed as planned integrations and are deliberately not shown until
-              they are actually implemented.
+            <Notice tone="warn" title={t("What it cannot tell you")}>
+              {t("No field-level soil moisture, canopy condition or yield is inferred here. GWETROOT is model-derived root-zone wetness, not a field measurement.")}
             </Notice>
           </div>
 
@@ -269,9 +248,7 @@ function ClimatePage() {
             <div className="text-[11.5px] leading-relaxed text-muted-foreground">
               <p className="font-medium text-foreground">{t("Planned, not implemented")}</p>
               <p className="mt-0.5">
-                SMAP root-zone soil moisture (L-band radiometer) · MODIS NDVI / evapotranspiration · soil
-                survey polygons from a national soil information system. These would add field-scale evidence;
-                until then the app relies on POWER plus the soil values you enter yourself.
+                {t("SMAP root-zone soil moisture, MODIS NDVI / evapotranspiration and national soil survey polygons are planned integrations. Until implemented, the app relies on POWER plus the soil values you enter yourself.")}
               </p>
             </div>
           </div>

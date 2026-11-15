@@ -17,9 +17,10 @@ import {
 import LanguageSwitcher from "@/components/common/LanguageSwitcher";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/AuthContext";
+import { useActiveFarm, useFarms } from "@/lib/data";
 
 const NAV = [
-  { to: "/", label: "Overview", icon: LayoutDashboard, exact: true },
+  { to: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
   { to: "/farm", label: "Farm setup", icon: MapPin },
   { to: "/crops", label: "Crop library", icon: BookOpen },
   { to: "/climate", label: "NASA climate", icon: Satellite },
@@ -59,7 +60,7 @@ function NavLinks({ onNavigate }) {
 function Brand() {
   const { t } = useI18n();
   return (
-    <Link to="/" className="flex items-center gap-3 px-1 py-1">
+    <Link to="/dashboard" className="flex items-center gap-3 px-1 py-1">
       <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
         <Sprout className="h-5 w-5" strokeWidth={1.9} />
       </span>
@@ -73,17 +74,28 @@ function Brand() {
   );
 }
 
-function SidebarFooter() {
+function SidebarFooter({ farm }) {
   const { t } = useI18n();
   return (
     <div className="rounded-xl border border-border/70 bg-secondary/40 p-3">
-      <p className="kicker">{t("Pilot region")}</p>
-      <p className="mt-1 text-[12.5px] font-medium leading-snug">{t("Harohalli, Karnataka, India")}</p>
+      <p className="kicker">{t("Active farm")}</p>
+      <p className="mt-1 text-[12.5px] font-medium leading-snug">{farm?.name || t("No farm selected")}</p>
+      <p className="mt-0.5 text-[11px] text-muted-foreground">{farm?.district || (farm ? `${farm.latitude}, ${farm.longitude}` : t("Add a farm in Farm setup"))}</p>
+      <p className="mt-3 border-t border-border/60 pt-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{t("Project pilot region")}</p>
+      <p className="mt-1 text-[12px] font-medium leading-snug">{t("Harohalli, Karnataka, India")}</p>
       <p className="mt-2 border-t border-border/60 pt-2 text-[11px] leading-relaxed text-muted-foreground">
         {t(
           "Hackathon prototype · NASA Space Apps 2026 “Field Shift”. Scores are scenario comparisons, not validated agronomic advice."
         )}
       </p>
+      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 border-t border-border/60 pt-2 text-[11px] font-medium">
+        <Link to="/" className="text-primary hover:underline">
+          {t("Public site")}
+        </Link>
+        <Link to="/demo" className="text-primary hover:underline">
+          {t("Demo")}
+        </Link>
+      </div>
     </div>
   );
 }
@@ -92,6 +104,8 @@ export default function Layout({ children }) {
   const [open, setOpen] = useState(false);
   const { t } = useI18n();
   const { user, logout } = useAuth();
+  const { farms, loading: farmsLoading } = useFarms();
+  const { farm } = useActiveFarm(farms, farmsLoading);
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[264px_1fr]">
@@ -109,7 +123,7 @@ export default function Layout({ children }) {
             <LogOut className="h-3.5 w-3.5" /> {t("Sign out")}
           </button>
         </div>
-        <SidebarFooter />
+        <SidebarFooter farm={farm} />
       </aside>
 
       {/* Mobile header */}

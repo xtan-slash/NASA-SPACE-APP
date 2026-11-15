@@ -16,11 +16,11 @@ import { scoreScenario } from "@/lib/scoring";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 
-export const Route = createFileRoute("/_app/")({
+export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({
     meta: [
-      { title: "TerraShift AI — Crop rotation decision support with NASA data" },
-      { name: "description", content: "Compare multi-year crop rotation scenarios anywhere in India using NASA POWER climate context, farm-entered soil inputs and configurable crop records." },
+      { title: "Dashboard · TerraShift AI" },
+      { name: "description", content: "Your private workspace: farms anywhere in India, NASA POWER climate context, and crop rotation scenarios scored on soil, water, climate and diversity." },
     ],
   }),
   component: Overview,

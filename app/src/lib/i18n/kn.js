@@ -27,6 +27,11 @@ export const KN = {
   "Loading farms…": "ಫಾರ್ಮ್‌ಗಳು ಲೋಡ್ ಆಗುತ್ತಿವೆ…",
   "Loading crop library…": "ಬೆಳೆ ಗ್ರಂಥಾಲಯ ಲೋಡ್ ಆಗುತ್ತಿದೆ…",
   "Loading scenarios…": "ಸನ್ನಿವೇಶಗಳು ಲೋಡ್ ಆಗುತ್ತಿವೆ…",
+  "Loading rotation scores…": "ಬೆಳೆ ಸರದಿ ಅಂಕಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ…",
+  "Loading historical climate data": "ಐತಿಹಾಸಿಕ ಹವಾಮಾನ ದತ್ತಾಂಶವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ",
+  "Loading historical climate and rotation scores": "ಐತಿಹಾಸಿಕ ಹವಾಮಾನ ಮತ್ತು ಬೆಳೆ ಸರದಿ ಅಂಕಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ",
+  "Fetching NASA POWER daily history for 2020–2025…": "2020–2025ರ NASA POWER ದೈನಂದಿನ ಇತಿಹಾಸವನ್ನು ಪಡೆಯಲಾಗುತ್ತಿದೆ…",
+  "NASA POWER grid point": "NASA POWER ಗ್ರಿಡ್ ಬಿಂದು",
   "Saving…": "ಉಳಿಸಲಾಗುತ್ತಿದೆ…",
   "Save": "ಉಳಿಸಿ",
   "Cancel": "ರದ್ದುಮಾಡಿ",
@@ -567,4 +572,34 @@ export const KN = {
   "rainfed": "ಮಳೆಯಾಶ್ರಿತ",
   "supplemental": "ಪೂರಕ ನೀರಾವರಿ",
   "assured": "ಖಚಿತ ನೀರಾವರಿ",
+
+  // Location-aware public demo and recent climate monitoring
+  "No farm selected": "ಯಾವುದೇ ಹೊಲವನ್ನು ಆಯ್ಕೆ ಮಾಡಿಲ್ಲ",
+  "Add a farm in Farm setup": "Farm setup ನಲ್ಲಿ ಒಂದು ಹೊಲವನ್ನು ಸೇರಿಸಿ",
+  "Project pilot region": "ಯೋಜನೆಯ ಪೈಲಟ್ ಪ್ರದೇಶ",
+  "Signed in": "ಸೈನ್ ಇನ್ ಆಗಿದೆ",
+  "Sign out": "ಸೈನ್ ಔಟ್ ಮಾಡಿ",
+  "Edit personal copy": "ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ಪ್ರತಿಯನ್ನು ಸಂಪಾದಿಸಿ",
+  "Customize": "ಕಸ್ಟಮೈಸ್ ಮಾಡಿ",
+  "Delete personal copy": "ವೈಯಕ್ತಿಕ ಪ್ರತಿಯನ್ನು ಅಳಿಸಿ",
+  "Sign in": "ಸೈನ್ ಇನ್ ಮಾಡಿ",
+  "Create account": "ಖಾತೆ ರಚಿಸಿ",
+  "Soil profile": "ಮಣ್ಣಿನ ವಿವರ",
+  "The private workspace requests NASA POWER data for your saved coordinates, subject to the service's publication delay. The public demo uses a fixed recorded 2020–2025 NASA POWER sample. The private advisor uses generative AI to explain server-recomputed evidence; the public demo advisor uses deterministic rules. Neither explanation changes the score.": "ಖಾಸಗಿ ಕಾರ್ಯಕ್ಷೇತ್ರವು ನೀವು ಉಳಿಸಿದ ನಿರ್ದೇಶಾಂಕಗಳಿಗಾಗಿ NASA POWER ದತ್ತಾಂಶವನ್ನು ಕೇಳುತ್ತದೆ; ಇದು ಸೇವೆಯ ಪ್ರಕಟಣಾ ವಿಳಂಬಕ್ಕೆ ಒಳಪಟ್ಟಿರುತ್ತದೆ. ಸಾರ್ವಜನಿಕ ಡೆಮೊ 2020–2025ರ ಸ್ಥಿರವಾಗಿ ದಾಖಲಿಸಿದ NASA POWER ಮಾದರಿಯನ್ನು ಬಳಸುತ್ತದೆ. ಖಾಸಗಿ ಸಲಹೆಗಾರವು ಸರ್ವರ್‌ನಲ್ಲಿ ಮರುಗಣಿಸಿದ ಸಾಕ್ಷ್ಯವನ್ನು ವಿವರಿಸಲು ಜನರೇಟಿವ್ AI ಬಳಸುತ್ತದೆ; ಸಾರ್ವಜನಿಕ ಡೆಮೊ ಸಲಹೆಗಾರವು ನಿರ್ಧಿಷ್ಟ ನಿಯಮಗಳನ್ನು ಬಳಸುತ್ತದೆ. ಈ ಎರಡೂ ವಿವರಣೆಗಳು ಅಂಕವನ್ನು ಬದಲಾಯಿಸುವುದಿಲ್ಲ.",
+  "Climate-smart agriculture": "ಹವಾಮಾನ-ಸ್ಮಾರ್ಟ್ ಕೃಷಿ",
+  "Try a sample location": "ಮಾದರಿ ಸ್ಥಳವನ್ನು ಪ್ರಯತ್ನಿಸಿ",
+  "Preview location selector": "ಸ್ಥಳ ಆಯ್ಕೆಯ ಪೂರ್ವವೀಕ್ಷಣೆ",
+  "Explore this location": "ಈ ಸ್ಥಳವನ್ನು ಅನ್ವೇಷಿಸಿ",
+  "Back": "ಹಿಂದೆ",
+  "NASA POWER is a gridded data service with publication delays. Recent windows end seven days before the current date, and the latest valid date can differ by parameter. This is not a field sensor or weather forecast.": "NASA POWER ಗ್ರಿಡ್ ಆಧಾರಿತ ದತ್ತಾಂಶ ಸೇವೆಯಾಗಿದ್ದು, ಪ್ರಕಟಣೆಯಲ್ಲಿ ವಿಳಂಬವಿರುತ್ತದೆ. ಇತ್ತೀಚಿನ ದತ್ತಾಂಶ ಅವಧಿಗಳು ಪ್ರಸ್ತುತ ದಿನಾಂಕಕ್ಕಿಂತ ಏಳು ದಿನಗಳ ಮೊದಲು ಮುಗಿಯುತ್ತವೆ; ಕೊನೆಯ ಮಾನ್ಯ ದಿನಾಂಕವು ನಿಯತಾಂಕದ ಪ್ರಕಾರ ಬದಲಾಗಬಹುದು. ಇದು ಹೊಲದ ಸೆನ್ಸರ್ ಅಥವಾ ಹವಾಮಾನ ಮುನ್ಸೂಚನೆ ಅಲ್ಲ.",
+  "NASA POWER distributes meteorology derived from assimilation models and satellite inputs on a coarse grid. It is not a farm measurement, and the value for a point represents the model grid cell containing that point.": "NASA POWER ಸಮೀಕರಣ ಮಾದರಿಗಳು ಮತ್ತು ಉಪಗ್ರಹದ ಮಾಹಿತಿಯಿಂದ ಪಡೆದ ಹವಾಮಾನ ದತ್ತಾಂಶವನ್ನು ದೊಡ್ಡ ಗ್ರಿಡ್‌ನಲ್ಲಿ ಒದಗಿಸುತ್ತದೆ. ಇದು ಹೊಲದ ನೇರ ಮಾಪನವಲ್ಲ; ಒಂದು ಬಿಂದುವಿನ ಮೌಲ್ಯವು ಆ ಬಿಂದುವನ್ನು ಒಳಗೊಂಡಿರುವ ಮಾದರಿ ಗ್ರಿಡ್ ಸೆಲ್ ಅನ್ನು ಪ್ರತಿನಿಧಿಸುತ್ತದೆ.",
+  "No field-level soil moisture, canopy condition or yield is inferred here. GWETROOT is model-derived root-zone wetness, not a field measurement.": "ಇಲ್ಲಿ ಹೊಲದ ಮಟ್ಟದ ಮಣ್ಣಿನ ತೇವಾಂಶ, ಬೆಳೆ ಮೇಲ್ಛಾವಣಿಯ ಸ್ಥಿತಿ ಅಥವಾ ಇಳುವರಿಯನ್ನು ಊಹಿಸಲಾಗುವುದಿಲ್ಲ. GWETROOT ಮಾದರಿಯಿಂದ ಲೆಕ್ಕಿಸಿದ ಬೇರು ವಲಯದ ತೇವಾಂಶ; ಇದು ಹೊಲದಲ್ಲಿ ಮಾಡಿದ ಮಾಪನವಲ್ಲ.",
+  "SMAP root-zone soil moisture, MODIS NDVI / evapotranspiration and national soil survey polygons are planned integrations. Until implemented, the app relies on POWER plus the soil values you enter yourself.": "SMAP ಬೇರು ವಲಯದ ಮಣ್ಣಿನ ತೇವಾಂಶ, MODIS NDVI / ಆವಿಸರ್ಜನೆ ಮತ್ತು ರಾಷ್ಟ್ರೀಯ ಮಣ್ಣಿನ ಸಮೀಕ್ಷೆಯ ನಕ್ಷೆಗಳನ್ನು ಮುಂದಿನ ಹಂತದಲ್ಲಿ ಸಂಯೋಜಿಸಲು ಯೋಜಿಸಲಾಗಿದೆ. ಅವು ಜಾರಿಗೆ ಬರುವವರೆಗೆ, ಆ್ಯಪ್ POWER ದತ್ತಾಂಶ ಮತ್ತು ನೀವು ನಮೂದಿಸುವ ಮಣ್ಣಿನ ಮೌಲ್ಯಗಳನ್ನು ಬಳಸುತ್ತದೆ.",
+  "DETERMINISTIC DEMO · NO GENERATIVE AI": "ನಿರ್ಧಿಷ್ಟ ಡೆಮೊ · ಜನರೇಟಿವ್ AI ಇಲ್ಲ",
+  "Climate dashboard": "ಹವಾಮಾನ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+  "Gridded reanalysis values for the selected point's grid cell — not a farm sensor, and historical rather than a forecast.": "ಆಯ್ಕೆ ಮಾಡಿದ ಬಿಂದುವಿನ ಗ್ರಿಡ್ ಸೆಲ್‌ನ ಗ್ರಿಡ್ ಆಧಾರಿತ ಮರುವಿಶ್ಲೇಷಣೆಯ ಮೌಲ್ಯಗಳು. ಇವು ಹೊಲದ ಸೆನ್ಸರ್ ಮಾಪನಗಳಲ್ಲ; ಮುನ್ಸೂಚನೆಯ ಬದಲಿಗೆ ಐತಿಹಾಸಿಕ ದತ್ತಾಂಶ."
+
+
+  // Additional feature explanations
+
 };

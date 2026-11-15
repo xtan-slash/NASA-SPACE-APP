@@ -1,6 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { HI } from "./hi";
 import { KN } from "./kn";
+import { translateInterfaceBatch } from "@/lib/server-fns";
+import { useAuth } from "@/lib/AuthContext";
 
 export const LANGUAGES = [
   { code: "en", label: "English", short: "EN" },
@@ -26,6 +29,12 @@ function translate(text, lang, vars) {
 
 export function LanguageProvider({ children }) {
   const [lang, setLangState] = useState("en");
+  const [dynamicTranslations, setDynamicTranslations] = useState({});
+  const { isAuthenticated } = useAuth();
+  const runTranslation = useServerFn(translateInterfaceBatch);
+  const pendingRef = useRef(new Set());
+  const timerRef = useRef(null);
+  const activeLangRef = useRef(lang);
 
   useEffect(() => {
     try {
@@ -37,10 +46,26 @@ export function LanguageProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    activeLangRef.current = lang;
+    pendingRef.current.clear();
+    try {
+      const cached = JSON.parse(window.localStorage.getItem(`terrashift.translations.${lang}`) || "{}");
+      setDynamicTranslations(cached && typeof cached === "object" ? cached : {});
+    } catch {
+      setDynamicTranslations({});
+    }
+  }, [lang]);
+
+  useEffect(() => {
     if (typeof document !== "undefined") document.documentElement.lang = lang;
   }, [lang]);
 
+  useEffect(() => () => {
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+  }, []);
+
   const setLang = useCallback((code) => {
+    if (!["en", "hi", "kn"].includes(code)) return;
     setLangState(code);
     try {
       window.localStorage.setItem(STORAGE_KEY, code);
@@ -49,7 +74,52 @@ export function LanguageProvider({ children }) {
     }
   }, []);
 
-  const t = useCallback((text, vars) => translate(text, lang, vars), [lang]);
+  const flushTranslations = useCallback(async () => {
+    timerRef.current = null;
+    if (!isAuthenticated || !["hi", "kn"].includes(activeLangRef.current)) return;
+    const targetLanguage = activeLangRef.current;
+    const texts = [...pendingRef.current].slice(0, 12);
+    texts.forEach((text) => pendingRef.current.delete(text));
+    if (!texts.length) return;
+
+    try {
+      const response = await runTranslation({ data: { targetLanguage, texts } });
+      if (response?.ok && activeLangRef.current === targetLanguage) {
+        setDynamicTranslations((previous) => {
+          const next = { ...previous, ...response.translations };
+          try {
+            window.localStorage.setItem(`terrashift.translations.${targetLanguage}`, JSON.stringify(next));
+          } catch {
+            /* translation cache is optional */
+          }
+          return next;
+        });
+      }
+    } catch {
+      // Keep the English fallback if the user is signed out or the service is unavailable.
+    }
+
+    if (pendingRef.current.size && activeLangRef.current === targetLanguage) {
+      timerRef.current = window.setTimeout(flushTranslations, 120);
+    }
+  }, [isAuthenticated, runTranslation]);
+
+  const t = useCallback((text, vars) => {
+    if (text == null) return text;
+    const local = translate(text, lang, vars);
+    if (local !== text || lang === "en") return local;
+
+    const cached = dynamicTranslations[text];
+    if (cached) {
+      return vars ? cached.replace(/\{(\w+)\}/g, (match, key) => (vars[key] != null ? String(vars[key]) : match)) : cached;
+    }
+
+    if (isAuthenticated && text.length <= 1800) {
+      pendingRef.current.add(text);
+      if (!timerRef.current) timerRef.current = window.setTimeout(flushTranslations, 80);
+    }
+    return local;
+  }, [lang, dynamicTranslations, isAuthenticated, flushTranslations]);
 
   const value = useMemo(
     () => ({ lang, setLang, t, locale: LOCALES[lang] || "en-IN" }),

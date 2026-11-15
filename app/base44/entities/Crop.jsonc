@@ -121,9 +121,53 @@
       "type": "string",
       "description": "Agronomic notes"
     },
+    "published_water_reference_mm": {
+      "type": "number",
+      "description": "Published crop water requirement reference in mm. Informational only; not used by scoring."
+    },
+    "published_duration_reference_days": {
+      "type": "number",
+      "description": "Published crop duration reference in days. Informational only; not used by scoring."
+    },
+    "reference_source_url": {
+      "type": "string",
+      "description": "URL of the published source for the reference values."
+    },
+    "reference_context": {
+      "type": "string",
+      "description": "Conditions and caveats applying to published water and duration reference values."
+    },
+    "published_ph_reference_min": {
+      "type": "number",
+      "description": "Published lower pH reference; informational only and not used by scoring."
+    },
+    "published_ph_reference_max": {
+      "type": "number",
+      "description": "Published upper pH reference; informational only and not used by scoring."
+    },
+    "published_texture_reference": {
+      "type": "string",
+      "description": "Published soil texture guidance; informational only and not used by scoring."
+    },
+    "ph_reference_source_url": {
+      "type": "string",
+      "description": "Source URL for published pH reference."
+    },
+    "texture_reference_source_url": {
+      "type": "string",
+      "description": "Source URL for published soil texture reference."
+    },
+    "ph_reference_context": {
+      "type": "string",
+      "description": "Conditions and caveats applying to published pH reference."
+    },
+    "texture_reference_context": {
+      "type": "string",
+      "description": "Conditions and caveats applying to published soil texture reference."
+    },
     "is_demo": {
       "type": "boolean",
-      "description": "True when parameters are illustrative demo values"
+      "description": "True when one or more scoring parameters remain illustrative demo values"
     }
   },
   "required": [

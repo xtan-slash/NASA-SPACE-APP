@@ -1,40 +1,54 @@
-# Base44 App — TanStack Start
+# TerraShift AI application source
 
-A full-stack Base44 app: [TanStack Start](https://tanstack.com/start) (React 19, plain JavaScript) with file-based routes, server functions and server routes, server-rendered and hosted by Base44.
+This directory is the current source snapshot of TerraShift AI, mirrored from the Base44 workspace.
 
-## What is in the starter
+- **Product:** TerraShift AI
+- **Challenge:** NASA Space Apps Challenge 2026, Field Shift: Adapting Farms with NASA Data
+- **Framework:** TanStack Start, React 19, Base44 SDK
+- **Source branch:** Base44 `main`
+- **Source commit:** `d7ed4d726fb83739623485e1b6abd9747765a974`
+- **Snapshot date:** 15 November 2026
 
-| Route | File |
-| --- | --- |
-| `/` | `src/routes/index.jsx` — a server-rendered page whose loader calls a server function |
-| `GET /api/time` | `src/routes/api/time.js` — a server route: a raw HTTP endpoint next to the pages |
+## Features in this source
 
-## Run locally
+- India-wide farm location selection and coordinate validation.
+- NASA POWER Daily Point historical climate retrieval and aggregation.
+- Climate coverage, missing-value handling, and recent climate monitoring.
+- Crop catalogue with private per-account crop overrides.
+- Rotation simulation and deterministic scoring across soil, water, climate, and diversity.
+- Scenario comparison and evidence-grounded AI advisor.
+- Public demo and Judge Mode routes.
+- English, Hindi, and Kannada interface translations.
+- Authentication, MFA routes, owner-scoped records, server-side validation, and protected server functions.
+- Per-runtime request throttling and security response headers.
+- Location cue graphics and loading skeletons.
+
+## Local development
 
 ```bash
 npm ci
-base44 login   # one-time per machine
-base44 link    # one-time per clone
-base44 dev     # local backend + app together
+base44 login
+base44 link
+base44 dev
 ```
 
-## Build and publish
+## Checks
 
 ```bash
-npm run build         # -> dist/client (assets) + dist/server (the Worker)
-base44 deploy         # or publish from the Base44 builder
+npm run lint
+npm run audit:security
+npm audit --audit-level=moderate
+npm run build
 ```
 
-There is no `index.html`: the HTML document is rendered on the server from `src/routes/__root.jsx`. The build runs through the [Cloudflare Vite plugin](https://developers.cloudflare.com/workers/vite-plugin/), so dev and build both execute server code in `workerd`.
+The latest recorded validation passed lint, the static security audit, dependency audit (zero reported vulnerabilities), and production build. Static security checks do not replace live anonymous and cross-account authorization testing.
 
-## How the pieces fit
+## Important limitations
 
-- **Pages** are files in `src/routes/`. A route's `loader` runs on the server for a document request and in the browser for a client navigation; `Route.useLoaderData()` gives the component the resolved data.
-- **Server functions** (`src/lib/server-fns.js`) are RPCs created with `createServerFn`. `src/start.js` runs every one of them through `authMiddleware`, which sends the visitor's token along, so `context.getBase44()` returns a client acting as that visitor and entity access rules apply. `context.getBase44().asServiceRole` bypasses them, so use it only after authenticating the caller (`.middleware([requireUser])`) and checking they may access the records involved: server functions and server routes are public endpoints anyone can call with any input. See **Server Security** in `AGENTS.md`. Call it only in handlers that need Base44: it reads the platform headers, and a handler that never calls it works without them.
-- **Secrets** are read in server code with `import { secrets } from "base44:runtime"` → `secrets.get("NAME")`, inside a handler. Never `process.env`.
-- **Server routes** (`src/routes/api/*.js`) are raw HTTP endpoints for URLs something other than the app's own code requests (webhooks, downloads, feeds); the app's pages call server functions. `src/start.js` runs every request through `base44RequestMiddleware`, so their `server.handlers` receive the same `context.getBase44()` (`({ request, params, context }) => …`).
-- **Server-only code** lives in `*.server.js` files (TanStack refuses to bundle them for the browser).
-- **Auth** is resolved client-side after hydration (`useAuth()`); the server is anonymous on a document request, so give per-user pages `ssr: false`.
-- **Sign-in and gated pages** are not wired in the starter: `src/components/auth/` holds the pages (login, register, password reset, MCP consent) and a login gate for `src/routes/_authed/`, to add when the app needs them. See **Adding Authentication** in `AGENTS.md`.
-- **AI**: TanStack AI is installed and runs on the Base44 AI gateway, with no API key and usage billed to the app's AI credits. `gatewayModel(context.getBase44())` in `src/lib/ai.server.js` builds the adapter; `AGENTS.md` has a streaming chat example (a server route plus `useChat`).
-- **Caching**: the platform caches only what a route opts into via `headers()` (`Cache-Control: public, s-maxage=…`). Everything else is served fresh.
+- NASA POWER is gridded historical climate context, not an in-field sensor or a forecast.
+- The scoring model is a heuristic prototype, not a validated yield, income, or soil-health prediction.
+- Demonstration crop sequences and farm inputs are illustrative, not farmer-reported baselines or validated local recommendations.
+- Rate limiting is per runtime instance, not a globally distributed limiter.
+- Live two-account isolation testing remains outstanding.
+
+The root repository README and `docs/` contain the project overview, methodology, data provenance, security notes, and status. This snapshot is not an automatic two-way sync with Base44.

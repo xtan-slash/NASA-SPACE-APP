@@ -8,10 +8,11 @@
     "build": "vite build",
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix",
+    "audit:security": "node scripts/security-audit.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@base44/sdk": "^0.8.61",
+    "@base44/sdk": "^0.8.62",
     "@base44/vite-plugin": "^1.0.52",
     "@hello-pangea/dnd": "^18.0.1",
     "@hookform/resolvers": "^5.9.1",
@@ -72,7 +73,6 @@
     "react-hot-toast": "^2.6.0",
     "react-leaflet": "^5.0.0",
     "react-markdown": "^9.0.1",
-    "react-quill-new": "^3.8.3",
     "react-resizable-panels": "^2.1.7",
     "recharts": "^2.15.4",
     "sonner": "^2.0.1",

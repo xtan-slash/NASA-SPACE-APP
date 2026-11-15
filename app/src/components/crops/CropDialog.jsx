@@ -118,12 +118,25 @@ export default function CropDialog({ open, crop, onOpenChange, onSaved }) {
     setSaving(true);
     try {
       let saved;
-      if (crop?.id) {
-        saved = await base44.entities.Crop.update(crop.id, payload);
+      const {
+        id: _recordId,
+        created_by_id: _createdById,
+        created_date: _createdDate,
+        updated_date: _updatedDate,
+        user_crop_id: _userCropId,
+        is_personal: _isPersonal,
+        ...cropValues
+      } = payload;
+      const personalPayload = {
+        ...cropValues,
+        ...(crop?.master_crop_id ? { master_crop_id: crop.master_crop_id } : crop?.is_personal && crop?.id ? {} : crop?.id ? { master_crop_id: crop.id } : {}),
+      };
+      if (crop?.user_crop_id) {
+        saved = await base44.entities.UserCrop.update(crop.user_crop_id, personalPayload);
       } else {
-        saved = await base44.entities.Crop.create({ ...payload, is_demo: false });
+        saved = await base44.entities.UserCrop.create({ ...personalPayload, is_demo: false });
       }
-      toast.success(crop?.id ? "Crop updated" : "Crop added to the library");
+      toast.success(crop?.user_crop_id ? "Personal crop settings updated" : crop?.id ? "Personal crop copy created" : "Personal crop added");
       onSaved?.(saved);
       onOpenChange(false);
     } catch (err) {
@@ -137,10 +150,9 @@ export default function CropDialog({ open, crop, onOpenChange, onSaved }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[88vh] max-w-3xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{crop?.id ? `Edit ${crop.name}` : "New crop record"}</DialogTitle>
+          <DialogTitle>{crop?.id ? `Customize ${crop.name}` : "New personal crop record"}</DialogTitle>
           <DialogDescription>
-            Parameter values are inputs to the scoring engine. Use your local package of practice where you
-            have it, and record the source so the advisor can repeat it.
+            Changes are saved to your account only. The shared master crop record remains unchanged for other users. Parameter values are inputs to the scoring engine, so record the source where available.
           </DialogDescription>
         </DialogHeader>
 

@@ -1,9 +1,10 @@
 import { ExternalLink } from "lucide-react";
 import CoverageBar from "@/components/climate/CoverageBar";
+import { useI18n } from "@/lib/i18n";
 
-function formatUtc(iso) {
+function formatUtc(iso, locale) {
   if (!iso) return "—";
-  return new Date(iso).toLocaleString("en-US", {
+  return new Date(iso).toLocaleString(locale, {
     timeZone: "UTC",
     year: "numeric",
     month: "short",
@@ -21,41 +22,42 @@ const fmtRange = (start, end) =>
   )}-${end?.slice(6, 8)}`;
 
 export default function SnapshotManifest({ snapshot, payload }) {
+  const { t, locale } = useI18n();
   if (!snapshot || !payload) return null;
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <div className="panel p-4">
-        <p className="kicker">Source & retrieval</p>
+        <p className="kicker">{t("Source & retrieval")}</p>
         <dl className="mt-3 space-y-2 text-[11.5px]">
           <div className="flex gap-2">
-            <dt className="w-28 shrink-0 text-muted-foreground">Dataset</dt>
+            <dt className="w-28 shrink-0 text-muted-foreground">{t("Dataset")}</dt>
             <dd className="font-medium">{payload.source}</dd>
           </div>
           <div className="flex gap-2">
-            <dt className="w-28 shrink-0 text-muted-foreground">Underlying model</dt>
-            <dd>{(payload.model_sources || []).join(", ") || "not reported"} (reanalysis / assimilated)</dd>
+            <dt className="w-28 shrink-0 text-muted-foreground">{t("Underlying model")}</dt>
+            <dd>{(payload.model_sources || []).join(", ") || t("not reported")} ({t("reanalysis / assimilated")})</dd>
           </div>
           <div className="flex gap-2">
-            <dt className="w-28 shrink-0 text-muted-foreground">API version</dt>
+            <dt className="w-28 shrink-0 text-muted-foreground">{t("API version")}</dt>
             <dd className="metric">{payload.api_version || "—"}</dd>
           </div>
           <div className="flex gap-2">
-            <dt className="w-28 shrink-0 text-muted-foreground">Point</dt>
+            <dt className="w-28 shrink-0 text-muted-foreground">{t("Point")}</dt>
             <dd className="metric">
               {snapshot.latitude?.toFixed(4)}, {snapshot.longitude?.toFixed(4)}
               {payload.elevation_m != null ? ` · ${payload.elevation_m.toFixed(1)} m` : ""}
             </dd>
           </div>
           <div className="flex gap-2">
-            <dt className="w-28 shrink-0 text-muted-foreground">Requested days</dt>
+            <dt className="w-28 shrink-0 text-muted-foreground">{t("Requested days")}</dt>
             <dd className="metric">{fmtRange(snapshot.start_date, snapshot.end_date)}</dd>
           </div>
           <div className="flex gap-2">
-            <dt className="w-28 shrink-0 text-muted-foreground">Retrieved (UTC)</dt>
-            <dd className="metric">{formatUtc(snapshot.retrieved_at)}</dd>
+            <dt className="w-28 shrink-0 text-muted-foreground">{t("Retrieved (UTC)")}</dt>
+            <dd className="metric">{formatUtc(snapshot.retrieved_at, locale)}</dd>
           </div>
           <div className="flex gap-2">
-            <dt className="w-28 shrink-0 text-muted-foreground">Time standard</dt>
+            <dt className="w-28 shrink-0 text-muted-foreground">{t("Time standard")}</dt>
             <dd>{payload.time_standard || "LST"}</dd>
           </div>
         </dl>
@@ -66,28 +68,27 @@ export default function SnapshotManifest({ snapshot, payload }) {
             rel="noreferrer"
             className="mt-3 inline-flex items-center gap-1.5 break-all text-[11px] font-medium text-primary hover:underline"
           >
-            Open the exact API request <ExternalLink className="h-3 w-3 shrink-0" />
+            {t("Open the exact API request")} <ExternalLink className="h-3 w-3 shrink-0" />
           </a>
         )}
       </div>
 
       <div className="panel p-4">
         <div className="flex items-baseline justify-between">
-          <p className="kicker">Data availability</p>
+          <p className="kicker">{t("Data availability")}</p>
           <span className="metric text-[11px] text-muted-foreground">
-            {((payload.coverage_key || 0) * 100).toFixed(1)}% key params
+            {((payload.coverage_key || 0) * 100).toFixed(1)}% {t("key parameters")}
           </span>
         </div>
         <p className="prose-note mt-1">
-          Share of expected daily values returned for the requested window. Missing days are excluded from
-          averages — never interpolated. Fill value sentinel: {payload.fill_value}.
+          {t("Share of expected daily values returned for the requested window. Missing days are excluded from averages — never interpolated. Fill value sentinel:")} {payload.fill_value}.
         </p>
         <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
           {(payload.params || []).map((p) => (
             <CoverageBar
               key={p.code}
               label={`${p.code}`}
-              unit={`${p.label} · ${p.unit}`}
+              unit={`${t(p.label)} · ${p.unit}`} 
               value={payload.coverage?.[p.code] ?? 0}
             />
           ))}

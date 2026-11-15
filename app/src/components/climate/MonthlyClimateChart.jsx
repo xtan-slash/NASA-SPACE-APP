@@ -9,17 +9,18 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import { useI18n } from "@/lib/i18n";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-function ChartTooltip({ active, payload, label }) {
+function ChartTooltip({ active, payload, label, t }) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border border-border bg-card px-2.5 py-2 text-[11px] shadow-sm">
       <p className="font-medium">{label}</p>
       {payload.map((p) => (
         <p key={p.dataKey} className="mt-0.5" style={{ color: p.color }}>
-          {p.name}: <span className="metric">{typeof p.value === "number" ? p.value.toFixed(1) : p.value}</span>
+          {t(p.name)}: <span className="metric">{typeof p.value === "number" ? p.value.toFixed(1) : p.value}</span>
           {p.dataKey === "precip_mm" ? " mm" : " °C"}
         </p>
       ))}
@@ -28,7 +29,8 @@ function ChartTooltip({ active, payload, label }) {
 }
 
 export default function MonthlyClimateChart({ monthly }) {
-  const data = (monthly || []).map((m) => ({ ...m, label: MONTHS[m.month - 1] }));
+  const { t } = useI18n();
+  const data = (monthly || []).map((m) => ({ ...m, label: t(MONTHS[m.month - 1]) }));
   return (
     <div className="h-[260px] w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -48,8 +50,8 @@ export default function MonthlyClimateChart({ monthly }) {
             axisLine={false}
             tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
           />
-          <Tooltip content={<ChartTooltip />} />
-          <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} />
+          <Tooltip content={(props) => <ChartTooltip {...props} t={t} />} />
+          <Legend formatter={(value) => t(value)} wrapperStyle={{ fontSize: 11, paddingTop: 6 }} />
           <Bar
             yAxisId="left"
             dataKey="precip_mm"

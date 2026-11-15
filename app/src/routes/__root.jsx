@@ -12,12 +12,20 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "TerraShift AI — Crop rotation decision support with NASA data" },
+      { title: "TerraShift AI | Climate-Smart Agriculture" },
       {
         name: "description",
         content:
-          "Compare multi-year crop rotation scenarios for Harohalli, Karnataka using NASA POWER climate data, local soil inputs and configurable crop records. Deterministic, explainable scores.",
+          "TerraShift AI helps explore climate-smart agricultural adaptation strategies across India using NASA Earth observation data, climate analysis, soil parameters, and crop rotation scenario comparisons.",
       },
+      { property: "og:site_name", content: "TerraShift AI" },
+      { property: "og:title", content: "TerraShift AI | Climate-Smart Agriculture" },
+      {
+        property: "og:description",
+        content:
+          "Explore climate-smart crop rotation scenarios anywhere in India using NASA POWER climate data, farm soil inputs and a documented deterministic scoring engine.",
+      },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

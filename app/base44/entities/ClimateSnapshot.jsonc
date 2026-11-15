@@ -27,6 +27,25 @@
       "type": "string",
       "description": "Last day requested, YYYYMMDD"
     },
+    "data_mode": {
+      "type": "string",
+      "enum": [
+        "custom",
+        "recent_30d",
+        "recent_90d",
+        "historical_5y",
+        "historical_10y"
+      ],
+      "description": "Requested climate window type"
+    },
+    "time_standard": {
+      "type": "string",
+      "enum": [
+        "UTC",
+        "LST"
+      ],
+      "description": "NASA POWER time standard used for the request"
+    },
     "source": {
       "type": "string",
       "description": "Data source name"
@@ -87,40 +106,13 @@
       ]
     },
     "read": {
-      "$or": [
-        {
-          "created_by_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "created_by_id": "{{user.id}}"
     },
     "update": {
-      "$or": [
-        {
-          "created_by_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "created_by_id": "{{user.id}}"
     },
     "delete": {
-      "$or": [
-        {
-          "created_by_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "created_by_id": "{{user.id}}"
     }
   }
 }

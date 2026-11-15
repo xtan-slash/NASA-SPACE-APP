@@ -27,6 +27,11 @@ export const HI = {
   "Loading farms…": "फ़ार्म लोड हो रहे हैं…",
   "Loading crop library…": "फ़सल पुस्तकालय लोड हो रहा है…",
   "Loading scenarios…": "परिदृश्य लोड हो रहे हैं…",
+  "Loading rotation scores…": "फ़सल-चक्र स्कोर लोड हो रहे हैं…",
+  "Loading historical climate data": "ऐतिहासिक जलवायु डेटा लोड हो रहा है",
+  "Loading historical climate and rotation scores": "ऐतिहासिक जलवायु और फ़सल-चक्र स्कोर लोड हो रहे हैं",
+  "Fetching NASA POWER daily history for 2020–2025…": "2020–2025 का NASA POWER दैनिक इतिहास प्राप्त किया जा रहा है…",
+  "NASA POWER grid point": "NASA POWER ग्रिड बिंदु",
   "Saving…": "सहेजा जा रहा है…",
   "Save": "सहेजें",
   "Cancel": "रद्द करें",
@@ -567,4 +572,34 @@ export const HI = {
   "rainfed": "वर्षा-आधारित",
   "supplemental": "पूरक सिंचाई",
   "assured": "सुनिश्चित सिंचाई",
+
+  // Location-aware public demo and recent climate monitoring
+  "No farm selected": "कोई खेत नहीं चुना गया",
+  "Add a farm in Farm setup": "Farm setup में एक खेत जोड़ें",
+  "Project pilot region": "परियोजना का पायलट क्षेत्र",
+  "Signed in": "साइन इन है",
+  "Sign out": "साइन आउट करें",
+  "Edit personal copy": "अपनी निजी प्रति संपादित करें",
+  "Customize": "अनुकूलित करें",
+  "Delete personal copy": "निजी प्रति हटाएँ",
+  "Sign in": "साइन इन करें",
+  "Create account": "खाता बनाएँ",
+  "Soil profile": "मिट्टी का विवरण",
+  "The private workspace requests NASA POWER data for your saved coordinates, subject to the service's publication delay. The public demo uses a fixed recorded 2020–2025 NASA POWER sample. The private advisor uses generative AI to explain server-recomputed evidence; the public demo advisor uses deterministic rules. Neither explanation changes the score.": "निजी कार्यक्षेत्र आपके सहेजे गए निर्देशांकों के लिए NASA POWER डेटा माँगता है; इसकी उपलब्धता सेवा के प्रकाशन-विलंब पर निर्भर करती है। सार्वजनिक डेमो 2020–2025 के रिकॉर्ड किए गए स्थिर NASA POWER नमूने का उपयोग करता है। निजी सलाहकार सर्वर पर दोबारा गणना किए गए प्रमाण को समझाने के लिए जनरेटिव AI का उपयोग करता है, जबकि सार्वजनिक डेमो सलाहकार नियतात्मक नियमों का उपयोग करता है। दोनों में से कोई भी व्याख्या स्कोर नहीं बदलती।",
+  "Climate-smart agriculture": "जलवायु-अनुकूल कृषि",
+  "Try a sample location": "नमूना स्थान आज़माएँ",
+  "Preview location selector": "स्थान चयन का पूर्वावलोकन",
+  "Explore this location": "इस स्थान का विश्लेषण करें",
+  "Back": "वापस",
+  "NASA POWER is a gridded data service with publication delays. Recent windows end seven days before the current date, and the latest valid date can differ by parameter. This is not a field sensor or weather forecast.": "NASA POWER ग्रिड-आधारित डेटा सेवा है और इसके प्रकाशन में विलंब होता है। हाल की डेटा अवधि वर्तमान तारीख से सात दिन पहले समाप्त होती है, और नवीनतम उपलब्ध तारीख पैरामीटर के अनुसार अलग हो सकती है। यह खेत का सेंसर या मौसम पूर्वानुमान नहीं है।",
+  "NASA POWER distributes meteorology derived from assimilation models and satellite inputs on a coarse grid. It is not a farm measurement, and the value for a point represents the model grid cell containing that point.": "NASA POWER डेटा समेकन मॉडल और उपग्रह इनपुट से प्राप्त मौसम संबंधी जानकारी को मोटे ग्रिड पर उपलब्ध कराता है। यह खेत का प्रत्यक्ष मापन नहीं है; किसी बिंदु का मान उस बिंदु को शामिल करने वाले मॉडल ग्रिड सेल का प्रतिनिधित्व करता है।",
+  "No field-level soil moisture, canopy condition or yield is inferred here. GWETROOT is model-derived root-zone wetness, not a field measurement.": "यहाँ खेत-स्तर की मिट्टी की नमी, फसल की छत्र स्थिति या उपज का अनुमान नहीं लगाया जाता। GWETROOT मॉडल से प्राप्त जड़-क्षेत्र की नमी है, खेत में किया गया मापन नहीं।",
+  "SMAP root-zone soil moisture, MODIS NDVI / evapotranspiration and national soil survey polygons are planned integrations. Until implemented, the app relies on POWER plus the soil values you enter yourself.": "SMAP जड़-क्षेत्र मिट्टी की नमी, MODIS NDVI / वाष्पोत्सर्जन और राष्ट्रीय मृदा सर्वेक्षण मानचित्रों को भविष्य में जोड़ने की योजना है। इनके लागू होने तक ऐप NASA POWER और आपके द्वारा दर्ज किए गए मिट्टी के मानों पर निर्भर करता है।",
+  "DETERMINISTIC DEMO · NO GENERATIVE AI": "नियतात्मक डेमो · जनरेटिव AI नहीं",
+  "Climate dashboard": "जलवायु डैशबोर्ड",
+  "Gridded reanalysis values for the selected point's grid cell — not a farm sensor, and historical rather than a forecast.": "चुने गए बिंदु के ग्रिड सेल के ग्रिड-आधारित पुनर्विश्लेषण मान। ये खेत के सेंसर के मापन नहीं, बल्कि ऐतिहासिक डेटा हैं, पूर्वानुमान नहीं।"
+
+
+  // Additional feature explanations
+
 };

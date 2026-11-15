@@ -2,12 +2,23 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { aggregatePower, buildPowerUrl } from "@/lib/power";
 import { POWER_PARAM_CODES } from "@/lib/catalog";
-import { deterministicSummary, scoreScenario } from "@/lib/scoring";
-import { DEMO_SCENARIO_IDS, demoEvidence } from "@/lib/demo-scoring";
+import { deterministicSummary, scoreScenario, isWithinIndiaBounds } from "@/lib/scoring";
+import { DEMO_SCENARIO_IDS, demoResults } from "@/lib/demo-scoring";
+import { DEMO_FARM, DEMO_CLIMATE } from "@/lib/demo-data";
 import { requireUser } from "@/lib/auth-middleware";
 import { secrets } from "base44:runtime";
+import { enforceRateLimit } from "@/lib/rate-limit.server";
 
 const DATE_RE = /^\d{8}$/;
+
+function isValidDateKey(value) {
+  if (!DATE_RE.test(value || "")) return false;
+  const year = Number(value.slice(0, 4));
+  const month = Number(value.slice(4, 6));
+  const day = Number(value.slice(6, 8));
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
 
 function daysBetween(start, end) {
   const toDate = (s) =>
@@ -53,7 +64,8 @@ export const translateInterfaceBatch = createServerFn({ method: "POST" })
       texts: z.array(z.string().min(1).max(1800)).min(1).max(12),
     })
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    enforceRateLimit({ scope: "translate", identity: context.user.id, limit: 10 });
     const apiKey = secrets.get("SARVAM_API_KEY");
     if (!apiKey) return { ok: false, error: "Translation service is not configured." };
 
@@ -120,13 +132,14 @@ export const loadClimateSnapshot = createServerFn({ method: "POST" })
       locationLabel: z.string().max(120).optional(),
       latitude: z.number().min(6.0).max(37.2),
       longitude: z.number().min(68.0).max(97.5),
-      startDate: z.string().regex(DATE_RE).optional(),
-      endDate: z.string().regex(DATE_RE).optional(),
+      startDate: z.string().refine(isValidDateKey, "Use a valid YYYYMMDD date.").optional(),
+      endDate: z.string().refine(isValidDateKey, "Use a valid YYYYMMDD date.").optional(),
       dataMode: z.enum(["recent_30d", "recent_90d", "historical_5y", "historical_10y"]).optional(),
       forceRefresh: z.boolean().optional(),
     })
   )
   .handler(async ({ data, context }) => {
+    enforceRateLimit({ scope: "climate-fetch", identity: context.user.id, limit: 4, windowMs: 5 * 60_000 });
     const requestedWindow = data.dataMode ? resolveClimateWindow(data.dataMode) : null;
     const startDate = requestedWindow?.startDate || data.startDate;
     const endDate = requestedWindow?.endDate || data.endDate;
@@ -282,6 +295,7 @@ export const explainScenario = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data, context }) => {
+    enforceRateLimit({ scope: "scenario-advisor", identity: context.user.id, limit: 8 });
     const base = context.getBase44();
     const scenarios = [];
     for (const id of data.scenarioIds) {
@@ -436,37 +450,108 @@ export const explainScenario = createServerFn({ method: "POST" })
     }
   });
 
+// Public, read-only location analysis. Requests are made server-side, are
+// bounded to the supported India mainland rectangle, and never write user records.
+const publicDemoClimateCache = new Map();
+async function fetchPublicDemoLocation(latitude, longitude) {
+  if (!isWithinIndiaBounds(latitude, longitude)) {
+    return { ok: false, error: "Choose coordinates within the supported India region." };
+  }
+  const lat = Number(latitude.toFixed(3));
+  const lon = Number(longitude.toFixed(3));
+  const cacheKey = `${lat},${lon}:20200101:20251231`;
+  const cached = publicDemoClimateCache.get(cacheKey);
+  if (cached && Date.now() - cached.cachedAt < 24 * 60 * 60 * 1000) {
+    return { ok: true, ...cached.value, cache_hit: true };
+  }
+
+  const startDate = "20200101";
+  const endDate = "20251231";
+  const url = buildPowerUrl({ latitude: lat, longitude: lon, startDate, endDate, timeStandard: "UTC" });
+  let json;
+  try {
+    const response = await fetch(url, {
+      headers: { Accept: "application/json", "User-Agent": "TerraShiftAI/1.0 (NASA Space Apps prototype)" },
+      signal: AbortSignal.timeout(30000),
+    });
+    if (!response.ok) return { ok: false, error: `NASA POWER returned HTTP ${response.status}. Please try again shortly.` };
+    json = await response.json();
+  } catch (error) {
+    return { ok: false, error: `Could not reach NASA POWER: ${error?.message || "network error"}` };
+  }
+  if (!json?.properties?.parameter) {
+    return { ok: false, error: `NASA POWER returned no parameter data. ${(json?.messages || []).join(" ")}`.trim() };
+  }
+
+  const climate = aggregatePower(json, { startDate, endDate, dataMode: "historical_6y" });
+  climate.requested_params = POWER_PARAM_CODES;
+  climate.requested_window = { mode: "historical_6y", start_date: startDate, end_date: endDate };
+  climate.retrieved_at_utc = new Date().toISOString();
+  const location = {
+    name: "Selected demonstration point",
+    district: "India",
+    latitude: lat,
+    longitude: lon,
+  };
+  const results = demoResults(climate, { ...DEMO_FARM, ...location });
+  const value = { climate, results, location };
+  publicDemoClimateCache.set(cacheKey, { cachedAt: Date.now(), value });
+  if (publicDemoClimateCache.size > 30) {
+    const oldest = publicDemoClimateCache.keys().next().value;
+    publicDemoClimateCache.delete(oldest);
+  }
+  return { ok: true, ...value, cache_hit: false };
+}
+
+export const loadPublicDemoLocation = createServerFn({ method: "POST" })
+  .validator(z.object({
+    latitude: z.number().min(6).max(37.2),
+    longitude: z.number().min(68).max(97.5),
+  }))
+  .handler(async ({ data }) => {
+    enforceRateLimit({ scope: "public-demo-location", limit: 8 });
+    return fetchPublicDemoLocation(data.latitude, data.longitude);
+  });
+
 /**
- * Public demo advisor: intentionally narrow. It accepts only the three fixed
- * demonstration scenarios and a short question, reads no database records and
- * restates the scores recomputed from the static demo dataset.
+ * Public demo advisor: deterministic only. It recomputes the selected fixed
+ * scenarios against the selected point's NASA POWER climate history.
  */
 export const explainDemoScenario = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      scenarioIds: z.array(z.enum(DEMO_SCENARIO_IDS)).min(1).max(3),
-      question: z.string().max(400).optional(),
-    })
-  )
-  .handler(async ({ data }) => {
-    const evidence = demoEvidence(data.scenarioIds);
-    if (!evidence.scenarios.length) {
-      return { ok: false, error: "Select a demonstration scenario first." };
+  .validator(z.object({
+    scenarioIds: z.array(z.enum(DEMO_SCENARIO_IDS)).min(1).max(3),
+    question: z.string().max(400).optional(),
+    latitude: z.number().min(6).max(37.2).optional(),
+    longitude: z.number().min(68).max(97.5).optional(),
+  }).superRefine((value, ctx) => {
+    if ((value.latitude == null) !== (value.longitude == null)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Latitude and longitude must be provided together.",
+        path: ["latitude"],
+      });
     }
-
-    // The public demo is deliberately read-only and does not call a paid LLM.
-    // Return a deterministic evidence summary instead of exposing an anonymous
-    // endpoint that could be abused to consume model credits.
-    const scenarioLines = evidence.scenarios.map((scenario) => {
-      const dimensions = Object.entries(scenario.dimensions || {})
+  }))
+  .handler(async ({ data }) => {
+    enforceRateLimit({ scope: "public-demo-advisor", limit: 12 });
+    let climate = DEMO_CLIMATE;
+    let location = DEMO_FARM;
+    if (data.latitude != null && data.longitude != null) {
+      const loaded = await fetchPublicDemoLocation(data.latitude, data.longitude);
+      if (!loaded.ok) return loaded;
+      climate = loaded.climate;
+      location = { ...DEMO_FARM, ...loaded.location };
+    }
+    const rows = demoResults(climate, location).filter((row) => data.scenarioIds.includes(row.id));
+    const scenarioLines = rows.map((row) => {
+      const dimensions = Object.entries(row.result.dimension_scores || {})
         .map(([key, value]) => `${key}: ${value == null ? "not scored" : Number(value).toFixed(1)}`)
         .join(", ");
-      return `${scenario.scenario}: overall ${scenario.overall == null ? "not scored" : Number(scenario.overall).toFixed(1)}/100 (${dimensions}).`;
+      return `${row.name}: overall ${row.result.overall == null ? "not scored" : Number(row.result.overall).toFixed(1)}/100 (${dimensions}).`;
     });
     const questionNote = data.question?.trim()
-      ? ` Your question was: "${data.question.trim()}". This public demo can only summarise the computed evidence shown below; it cannot provide new agronomic advice.`
+      ? ` Your question was: "${data.question.trim()}". This public demo summarises computed evidence only; it does not provide agronomic advice.`
       : "";
-    const text = `Demonstration data only. ${scenarioLines.join(" ")} The overall score is a heuristic comparison of available dimensions, not a yield, income or profit forecast. NASA POWER values describe a gridded historical model record for the sample point, not an on-farm sensor or a future forecast. Soil and crop parameters are illustrative inputs. Missing inputs and uncertainty notes should be reviewed before interpreting any score.${questionNote}`;
-    return { ok: true, text, evidence, explanationType: "deterministic" };
-
+    const text = `Demonstration data for ${location.name || "the selected point"} (${location.latitude.toFixed(3)}, ${location.longitude.toFixed(3)}). ${scenarioLines.join(" ")} Scores are heuristic comparisons, not yield, income or profit forecasts. NASA POWER values describe a gridded historical model record for 2020–2025, not an on-farm sensor or future forecast. Soil and crop parameters remain illustrative Harohalli demo inputs, not local soil measurements. Review missing inputs and uncertainty before interpreting scores.${questionNote}`;
+    return { ok: true, text, explanationType: "deterministic", climate_location: location };
   });

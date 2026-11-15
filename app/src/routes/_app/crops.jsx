@@ -65,8 +65,13 @@ function CropsPage() {
   const remove = async () => {
     if (!confirm) return;
     try {
-      await base44.entities.Crop.delete(confirm.id);
-      toast.success("Crop deleted");
+      if (!confirm.user_crop_id) {
+        toast.error("Shared master crops cannot be deleted. You can customise a personal copy instead.");
+        setConfirm(null);
+        return;
+      }
+      await base44.entities.UserCrop.delete(confirm.user_crop_id);
+      toast.success("Your personal crop record was deleted");
       setConfirm(null);
       await reload();
     } catch (err) {
@@ -81,7 +86,7 @@ function CropsPage() {
       <PageHeader
         kicker="Step 2 · Parameters"
         title="Crop library"
-        description="Every crop parameter used by the engine is editable here. The library ships with illustrative values for common Harohalli crops — replace them with your own package-of-practice numbers."
+        description="Browse the shared master crop catalogue and create personal copies. Any changes you make are private to your account and do not alter the shared catalogue."
         actions={
           <Button className="gap-1.5" onClick={() => setDialog({ open: true, crop: null })}>
             <Plus className="h-3.5 w-3.5" /> {t("New crop")}
@@ -89,9 +94,8 @@ function CropsPage() {
         }
       />
 
-      <Notice tone="warn" title={`${demoCount} of ${crops.length} records are illustrative demo values`}>
-        Nothing in this library is a measured observation. Water demand, pH and temperature ranges vary by
-        variety and management; edit them or add your own records, and record the source in each crop.
+      <Notice tone="info" title={`${demoCount} of ${crops.length} records still contain illustrative scoring inputs`}>
+        Published references are shown separately from scoring inputs. A TNAU field-crop guide provides a tomato soil pH and texture reference; other crop-specific pH, temperature and texture inputs remain illustrative where a suitable source has not been verified. None of these published references are substituted into the scoring model.
       </Notice>
 
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
