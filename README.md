@@ -98,6 +98,10 @@ The latest repository source snapshot referenced by the project status is commit
 
 For the latest validation results and remaining verification tasks, see [Project status](docs/project-status.md).
 
+## LOG IN (MASTER KEY)
+
+So in the project link u can see the demo,  JUDGE Mode and everything but if u login(sign in with google or create an acc u can see the inner features of the web if u want a login credentials (master key) use this ID - terrashiftai@gmail.com, pass - terrashiftai
+
 ## Documentation
 
 - [System architecture](docs/architecture.md)
