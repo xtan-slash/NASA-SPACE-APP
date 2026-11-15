@@ -43,7 +43,7 @@ Registration role provisioning still needs a fresh-account test. Do not assume a
 
 - `npm run lint` passed.
 - `npm run audit:security` passed all six static checks covering creator-only RLS, shared Crop catalogue permissions, UserCrop isolation, account-specific active-farm storage, sidebar labeling, and protected server functions/public demo behavior.
-- `npm run build` passed.
+- `npm run build` passed.\n- Latest static validation also covers the India coordinate bounds, NASA POWER fill-value handling, fallow-season transition logic, and rejection of all-zero scenario weights.
 - Latest Base44 checkpoint: `6af9786e08b3f90cc6196912`.
 - Latest deployed source commit: `dddbf773138800dd5129ccc19958ecf793a93dce`.
 
