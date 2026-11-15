@@ -1,6 +1,6 @@
 # TerraShift AI — Project Status
 
-_Last updated: 14 November 2026_
+_Last updated: 15 November 2026_
 
 ## Product snapshot
 - **Challenge:** NASA Space Apps Challenge 2026, Field Shift: Adapting Farms with NASA Data.
@@ -23,16 +23,21 @@ _Last updated: 14 November 2026_
 - English, Hindi, and Kannada language options.
 - Login, registration, password recovery, reset, and MFA routes.
 - Protected application workspace and sign-out control.
-- Owner/admin RLS for Farm, Scenario, and ClimateSnapshot.
-- Shared read-only Crop library for non-admin users; admin-only crop writes.
+- Creator-only read/update/delete RLS for Farm, Scenario, ClimateSnapshot, and UserCrop, with signed-in creation and no admin cross-account bypass.
+- Shared public-read master Crop catalogue with admin-only writes; per-user crop overrides stored in UserCrop.
 - Authenticated server functions for climate loading and scenario explanation.
+- Public read-only demo routes, including Judge Mode, using fixed sample data.
+- Account-specific active-farm selection and per-account private Harohalli demo-farm seeding.
+- Hindi and Kannada translations for the AI Advisor, including language-aware AI-generated explanations.
 
-## Verified in the latest security-related code checkpoint
-- Lint passed.
-- Production build passed.
-- Entity schemas inspected after RLS configuration.
-- Base44 checkpoint saved: `6af8363f48a31f6866dc3f1f`.
-- Checkpoint commit: `32d685bff114832e3f2a271547dcc081dac4f050`.
+## Latest deployed and validated state
+- Latest deployment: 15 November 2026.
+- Base44 checkpoint: `6af9786e08b3f90cc6196912`.
+- Base44 source commit: `dddbf773138800dd5129ccc19958ecf793a93dce`.
+- `npm run lint` passed.
+- `npm run audit:security` passed all six static checks.
+- `npm run build` passed.
+- Latest code changes include Hindi/Kannada AI Advisor translations, language-aware model responses, per-account Harohalli demo-farm seeding, active-farm reload, Method page back navigation, and account-boundary disclosures.
 
 ## Demonstration and data limitations
 - NASA POWER history shown in the prototype is 2020–2025, not a 2026–2029 forecast.
@@ -53,6 +58,7 @@ _Last updated: 14 November 2026_
 6. Browser-test India location search, manual coordinates, and language switching.
 7. Review Nominatim usage-policy compliance and decide whether to add a controlled geocoding proxy/provider.
 8. Keep the `app/` source export synchronized with Base44 after future code changes; this is a snapshot, not an automatic two-way sync.
+9. Independently clean-build the exported GitHub `app/` folder and verify the latest sync commit.
 
 ## Design status
 A Figma file has been created with an editable TerraShift AI dashboard frame and reusable KPI card component. Climate Explorer was the next planned design screen but has not yet been recorded as completed.
