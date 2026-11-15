@@ -3,7 +3,9 @@ import { z } from "zod";
 import { aggregatePower, buildPowerUrl } from "@/lib/power";
 import { POWER_PARAM_CODES } from "@/lib/catalog";
 import { deterministicSummary, scoreScenario } from "@/lib/scoring";
+import { DEMO_SCENARIO_IDS, demoEvidence } from "@/lib/demo-scoring";
 import { requireUser } from "@/lib/auth-middleware";
+import { secrets } from "base44:runtime";
 
 const DATE_RE = /^\d{8}$/;
 
@@ -12,6 +14,99 @@ function daysBetween(start, end) {
     Date.UTC(Number(s.slice(0, 4)), Number(s.slice(4, 6)) - 1, Number(s.slice(6, 8)));
   return Math.round((toDate(end) - toDate(start)) / 86400000);
 }
+
+function shiftUtcDate(date, days) {
+  const shifted = new Date(date.slice(0, 4) + "-" + date.slice(4, 6) + "-" + date.slice(6, 8) + "T00:00:00Z");
+  shifted.setUTCDate(shifted.getUTCDate() + days);
+  return shifted.toISOString().slice(0, 10).replace(/-/g, "");
+}
+
+function resolveClimateWindow(dataMode, now = new Date()) {
+  const today = now.toISOString().slice(0, 10).replace(/-/g, "");
+  // POWER products have different publication latencies. Use a conservative
+  // seven-day buffer and still report each parameter's actual latest valid date.
+  const recentEnd = shiftUtcDate(today, -7);
+  if (dataMode === "recent_30d" || dataMode === "recent_90d") {
+    const span = dataMode === "recent_30d" ? 29 : 89;
+    return { startDate: shiftUtcDate(recentEnd, -span), endDate: recentEnd };
+  }
+  if (dataMode === "historical_5y" || dataMode === "historical_10y") {
+    const year = Number(today.slice(0, 4)) - 1;
+    const years = dataMode === "historical_5y" ? 5 : 10;
+    return { startDate: String(year - years + 1) + "0101", endDate: String(year) + "1231" };
+  }
+  return null;
+}
+
+const sarvamCache = new Map();
+const SARVAM_LANGUAGES = { hi: "hi-IN", kn: "kn-IN" };
+
+/**
+ * Translate short interface strings on demand. The caller must be signed in;
+ * the API key stays server-side and the request size is deliberately bounded.
+ */
+export const translateInterfaceBatch = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(
+    z.object({
+      targetLanguage: z.enum(["hi", "kn"]),
+      texts: z.array(z.string().min(1).max(1800)).min(1).max(12),
+    })
+  )
+  .handler(async ({ data }) => {
+    const apiKey = secrets.get("SARVAM_API_KEY");
+    if (!apiKey) return { ok: false, error: "Translation service is not configured." };
+
+    const targetLanguageCode = SARVAM_LANGUAGES[data.targetLanguage];
+    const uniqueTexts = [...new Set(data.texts.map((value) => value.trim()).filter(Boolean))];
+    const results = {};
+
+    for (const input of uniqueTexts) {
+      const cacheKey = `${data.targetLanguage}:${input}`;
+      if (sarvamCache.has(cacheKey)) {
+        results[input] = sarvamCache.get(cacheKey);
+        continue;
+      }
+
+      try {
+        const response = await fetch("https://api.sarvam.ai/translate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "api-subscription-key": apiKey,
+          },
+          body: JSON.stringify({
+            input,
+            source_language_code: "en-IN",
+            target_language_code: targetLanguageCode,
+            model: "sarvam-translate:v1",
+            numerals_format: "international",
+          }),
+          signal: AbortSignal.timeout(20000),
+        });
+
+        if (!response.ok) {
+          const detail = await response.text().catch(() => "");
+          return {
+            ok: false,
+            error: `Sarvam translation failed (HTTP ${response.status}). ${detail.slice(0, 240)}`,
+          };
+        }
+
+        const payload = await response.json();
+        const translated = typeof payload.translated_text === "string" ? payload.translated_text.trim() : "";
+        if (!translated) return { ok: false, error: "Sarvam returned an empty translation." };
+
+        results[input] = translated;
+        sarvamCache.set(cacheKey, translated);
+        if (sarvamCache.size > 1000) sarvamCache.delete(sarvamCache.keys().next().value);
+      } catch (error) {
+        return { ok: false, error: error?.message || "Could not reach Sarvam translation service." };
+      }
+    }
+
+    return { ok: true, translations: results };
+  });
 
 /**
  * Fetch NASA POWER daily point data for a farm and store the aggregated snapshot
@@ -25,13 +120,18 @@ export const loadClimateSnapshot = createServerFn({ method: "POST" })
       locationLabel: z.string().max(120).optional(),
       latitude: z.number().min(-90).max(90),
       longitude: z.number().min(-180).max(180),
-      startDate: z.string().regex(DATE_RE),
-      endDate: z.string().regex(DATE_RE),
+      startDate: z.string().regex(DATE_RE).optional(),
+      endDate: z.string().regex(DATE_RE).optional(),
+      dataMode: z.enum(["recent_30d", "recent_90d", "historical_5y", "historical_10y"]).optional(),
+      forceRefresh: z.boolean().optional(),
     })
   )
   .handler(async ({ data, context }) => {
-    const { startDate, endDate } = data;
+    const requestedWindow = data.dataMode ? resolveClimateWindow(data.dataMode) : null;
+    const startDate = requestedWindow?.startDate || data.startDate;
+    const endDate = requestedWindow?.endDate || data.endDate;
     const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    if (!startDate || !endDate) return { ok: false, error: "Choose a climate data window or provide both start and end dates." };
     if (startDate > endDate) return { ok: false, error: "Start date must be before the end date." };
     if (startDate < "19840101") return { ok: false, error: "NASA POWER daily data starts on 1984-01-01." };
     if (endDate > today) return { ok: false, error: "The end date cannot be in the future." };
@@ -49,6 +149,38 @@ export const loadClimateSnapshot = createServerFn({ method: "POST" })
     if (Math.abs(Number(farm.latitude) - data.latitude) > 0.00001 || Math.abs(Number(farm.longitude) - data.longitude) > 0.00001) {
       return { ok: false, error: "The submitted coordinates do not match the saved farm. Reload the farm and try again." };
     }
+    const mode = data.dataMode || "custom";
+    const cacheTtlMs = mode.startsWith("recent_") ? 6 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+    if (!data.forceRefresh) {
+      try {
+        const cachedPage = await base.entities.ClimateSnapshot.filter(
+          { farm_id: farm.id, status: "ready", data_mode: mode, start_date: startDate, end_date: endDate },
+          { sort: "-retrieved_at", limit: 10 }
+        );
+        const nowMs = Date.now();
+        const cached = (cachedPage.items || []).find((item) => {
+          const retrievedMs = Date.parse(item.retrieved_at || "");
+          return (
+            Number.isFinite(retrievedMs) &&
+            nowMs - retrievedMs >= 0 &&
+            nowMs - retrievedMs < cacheTtlMs &&
+            item.time_standard === "UTC" &&
+            Math.abs(Number(item.latitude) - Number(farm.latitude)) <= 0.00001 &&
+            Math.abs(Number(item.longitude) - Number(farm.longitude)) <= 0.00001
+          );
+        });
+        if (cached) {
+          try {
+            return { ok: true, snapshot: { ...cached, payload: JSON.parse(cached.payload_json || "{}") }, cache_hit: true };
+          } catch {
+            // A malformed cached payload is ignored and fetched again.
+          }
+        }
+      } catch {
+        // Cache lookup failure must not prevent a fresh NASA request.
+      }
+    }
+
     const url = buildPowerUrl({
       latitude: farm.latitude,
       longitude: farm.longitude,
@@ -77,8 +209,15 @@ export const loadClimateSnapshot = createServerFn({ method: "POST" })
       };
     }
 
-    const aggregated = aggregatePower(json, { startDate, endDate });
+    const aggregated = aggregatePower(json, { startDate, endDate, dataMode: data.dataMode || "custom" });
     aggregated.requested_params = POWER_PARAM_CODES;
+    aggregated.requested_window = {
+      mode: data.dataMode || "custom",
+      start_date: startDate,
+      end_date: endDate,
+      publication_buffer_days: data.dataMode?.startsWith("recent_") ? 7 : null,
+    };
+    aggregated.retrieved_at_utc = new Date().toISOString();
 
     const record = await base.entities.ClimateSnapshot.create({
       farm_id: farm.id,
@@ -87,6 +226,8 @@ export const loadClimateSnapshot = createServerFn({ method: "POST" })
       longitude: farm.longitude,
       start_date: startDate,
       end_date: endDate,
+      data_mode: mode,
+      time_standard: aggregated.time_standard,
       source: aggregated.source,
       source_url: url,
       retrieved_at: new Date().toISOString(),
@@ -96,7 +237,7 @@ export const loadClimateSnapshot = createServerFn({ method: "POST" })
       error_message: "",
     });
 
-    return { ok: true, snapshot: { ...record, payload: aggregated } };
+    return { ok: true, snapshot: { ...record, payload: aggregated }, cache_hit: false };
   });
 
 function compactResult(result) {
@@ -137,6 +278,7 @@ export const explainScenario = createServerFn({ method: "POST" })
     z.object({
       scenarioIds: z.array(z.string().min(1)).min(1).max(4),
       question: z.string().max(500).optional(),
+      language: z.enum(["en", "hi", "kn"]).default("en"),
     })
   )
   .handler(async ({ data, context }) => {
@@ -160,15 +302,27 @@ export const explainScenario = createServerFn({ method: "POST" })
 
     const snapshotPage = await base.entities.ClimateSnapshot.filter(
       { farm_id: farmId, status: "ready" },
-      { sort: "-retrieved_at", limit: 1 }
+      { sort: "-retrieved_at", limit: 100 }
     );
-    const snapshot = (snapshotPage.items || [])[0] || null;
+    // Recent monitor snapshots are deliberately excluded from rotation scoring.
+    // Scoring requires historical seasonal aggregates; legacy snapshots without
+    // data_mode remain eligible if they contain usable seasonal evidence.
+    let snapshot = null;
     let climate = null;
-    if (snapshot?.payload_json) {
+    for (const candidate of snapshotPage.items || []) {
+      if (candidate.data_mode === "recent_30d" || candidate.data_mode === "recent_90d") continue;
       try {
-        climate = JSON.parse(snapshot.payload_json);
+        const parsed = JSON.parse(candidate.payload_json || "{}");
+        const hasSeasonalEvidence = Object.values(parsed.seasons || {}).some(
+          (season) => Array.isArray(season.by_year) && season.by_year.length > 0
+        );
+        if (hasSeasonalEvidence) {
+          snapshot = candidate;
+          climate = parsed;
+          break;
+        }
       } catch {
-        climate = null;
+        // Ignore malformed snapshots and continue to the next historical candidate.
       }
     }
 
@@ -213,6 +367,8 @@ export const explainScenario = createServerFn({ method: "POST" })
             model_sources: climate.model_sources,
             requested_start: climate.start_date,
             requested_end: climate.end_date,
+            data_mode: climate.data_mode || snapshot.data_mode || "legacy/custom",
+            time_standard: climate.time_standard || snapshot.time_standard || "unknown",
             retrieved_at: snapshot.retrieved_at,
             coverage_pct: Math.round((climate.coverage_key || 0) * 1000) / 10,
             elevation_m: climate.elevation_m,
@@ -242,6 +398,11 @@ export const explainScenario = createServerFn({ method: "POST" })
 
     const systemRules = [
       "You explain the output of a deterministic crop-rotation scoring prototype called TerraShift AI.",
+      data.language === "hi"
+        ? "Write the entire explanation in clear, natural Hindi (हिन्दी). Keep crop names, NASA POWER, units, dates and numeric values accurate. Do not switch to English except for proper names and technical abbreviations."
+        : data.language === "kn"
+          ? "Write the entire explanation in clear, natural Kannada (ಕನ್ನಡ). Keep crop names, NASA POWER, units, dates and numeric values accurate. Do not switch to English except for proper names and technical abbreviations."
+          : "Write the entire explanation in clear English.",
       "RULES:",
       "1. Use ONLY values that appear in the DATA JSON. Never compute a new number; you may compare or difference values that are present.",
       "2. Never invent or imply satellite observations, farm measurements, weather records, crop parameters, prices, yields or profits.",
@@ -273,4 +434,39 @@ export const explainScenario = createServerFn({ method: "POST" })
         deterministic: packed.map((p) => ({ scenario: p.scenario, summary: p.deterministic_summary })),
       };
     }
+  });
+
+/**
+ * Public demo advisor: intentionally narrow. It accepts only the three fixed
+ * demonstration scenarios and a short question, reads no database records and
+ * restates the scores recomputed from the static demo dataset.
+ */
+export const explainDemoScenario = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      scenarioIds: z.array(z.enum(DEMO_SCENARIO_IDS)).min(1).max(3),
+      question: z.string().max(400).optional(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const evidence = demoEvidence(data.scenarioIds);
+    if (!evidence.scenarios.length) {
+      return { ok: false, error: "Select a demonstration scenario first." };
+    }
+
+    // The public demo is deliberately read-only and does not call a paid LLM.
+    // Return a deterministic evidence summary instead of exposing an anonymous
+    // endpoint that could be abused to consume model credits.
+    const scenarioLines = evidence.scenarios.map((scenario) => {
+      const dimensions = Object.entries(scenario.dimensions || {})
+        .map(([key, value]) => `${key}: ${value == null ? "not scored" : Number(value).toFixed(1)}`)
+        .join(", ");
+      return `${scenario.scenario}: overall ${scenario.overall == null ? "not scored" : Number(scenario.overall).toFixed(1)}/100 (${dimensions}).`;
+    });
+    const questionNote = data.question?.trim()
+      ? ` Your question was: "${data.question.trim()}". This public demo can only summarise the computed evidence shown below; it cannot provide new agronomic advice.`
+      : "";
+    const text = `Demonstration data only. ${scenarioLines.join(" ")} The overall score is a heuristic comparison of available dimensions, not a yield, income or profit forecast. NASA POWER values describe a gridded historical model record for the sample point, not an on-farm sensor or a future forecast. Soil and crop parameters are illustrative inputs. Missing inputs and uncertainty notes should be reviewed before interpreting any score.${questionNote}`;
+    return { ok: true, text, evidence, explanationType: "deterministic" };
+
   });
