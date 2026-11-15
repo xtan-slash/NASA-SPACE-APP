@@ -10,7 +10,6 @@ TerraShift AI is an AI-assisted, explainable web application for exploring crop-
 
 - **Live application:** https://terra-shift-ai-earth.base44.app/
 - **GitHub repository:** https://github.com/xtan-slash/NASA-SPACE-APP
-- **Figma design:** https://www.figma.com/design/vm1vpLWyygL4nhNInOjrwK/
 - **NASA Space Apps challenge:** https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/
 - **Harohalli local event:** https://www.spaceappschallenge.org/2026/local-events/harohalli/
 
