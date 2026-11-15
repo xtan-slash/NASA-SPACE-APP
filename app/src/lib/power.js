@@ -6,7 +6,7 @@ import { POWER_PARAM_CODES, POWER_PARAMS, SEASONS } from "./catalog.js";
 
 export const POWER_BASE = "https://power.larc.nasa.gov/api/temporal/daily/point";
 
-export function buildPowerUrl({ latitude, longitude, startDate, endDate }) {
+export function buildPowerUrl({ latitude, longitude, startDate, endDate, timeStandard = "UTC" }) {
   const params = new URLSearchParams({
     parameters: POWER_PARAM_CODES.join(","),
     community: "AG",
@@ -15,6 +15,7 @@ export function buildPowerUrl({ latitude, longitude, startDate, endDate }) {
     start: startDate,
     end: endDate,
     format: "JSON",
+    "time-standard": timeStandard,
   });
   return `${POWER_BASE}?${params.toString()}`;
 }
@@ -46,21 +47,28 @@ function mean(values) {
   return valid.reduce((a, b) => a + b, 0) / valid.length;
 }
 
-export function aggregatePower(json, { startDate, endDate }) {
+export function aggregatePower(json, { startDate, endDate, dataMode = "custom" }) {
   const parameters = json?.properties?.parameter || {};
   const fill = json?.header?.fill_value ?? -999;
   const days = dayList(startDate, endDate);
   const unitMap = Object.fromEntries(POWER_PARAMS.map((p) => [p.code, p.unit]));
 
   const get = (code, key) => {
-    const v = parameters[code]?.[key];
-    return v == null || v === fill ? null : Number(v);
+    const raw = parameters[code]?.[key];
+    if (raw == null || String(raw).trim() === "") return null;
+    const value = Number(raw);
+    // POWER fill values may arrive as numbers or strings. Always reject the
+    // documented -999 sentinel even if the response header omits fill_value.
+    if (!Number.isFinite(value) || value === Number(fill) || value === -999) return null;
+    return value;
   };
 
   const coverage = {};
+  const parameterLatestDates = {};
   for (const code of POWER_PARAM_CODES) {
-    const present = days.filter((d) => get(code, d.key) != null).length;
-    coverage[code] = days.length ? present / days.length : 0;
+    const validDays = days.filter((d) => get(code, d.key) != null);
+    coverage[code] = days.length ? validDays.length / days.length : 0;
+    parameterLatestDates[code] = validDays.length ? validDays[validDays.length - 1].key : null;
   }
 
   // Annual summaries
@@ -78,8 +86,8 @@ export function aggregatePower(json, { startDate, endDate }) {
       t2m_max_c: round(mean(yearDays.map((d) => get("T2M_MAX", d.key))), 2),
       gwetroot: round(mean(yearDays.map((d) => get("GWETROOT", d.key))), 3),
       solar_mj: round(mean(yearDays.map((d) => get("ALLSKY_SFC_SW_DWN", d.key))), 2),
-      heat_days_35: yearDays.filter((d) => (get("T2M_MAX", d.key) ?? -999) >= 35).length,
-      heavy_rain_days_50: yearDays.filter((d) => (get("PRECTOTCORR", d.key) ?? 0) >= 50).length,
+      heat_days_35: yearDays.filter((d) => { const value = get("T2M_MAX", d.key); return value != null && value >= 35; }).length,
+      heavy_rain_days_50: yearDays.filter((d) => { const value = get("PRECTOTCORR", d.key); return value != null && value >= 50; }).length,
     };
   });
 
@@ -108,6 +116,13 @@ export function aggregatePower(json, { startDate, endDate }) {
     if (season.value === "rabi") return d.month >= 11 ? d.year : d.year - 1;
     return d.year;
   };
+  const expectedSeasonDays = (season, year) => {
+    const start = season.value === "rabi" ? Date.UTC(year, 10, 1) :
+      season.value === "kharif" ? Date.UTC(year, 5, 1) : Date.UTC(year, 3, 1);
+    const end = season.value === "rabi" ? Date.UTC(year + 1, 2, 31) :
+      season.value === "kharif" ? Date.UTC(year, 9, 31) : Date.UTC(year, 4, 31);
+    return Math.round((end - start) / 86400000) + 1;
+  };
   const seasons = {};
   for (const season of SEASONS) {
     const seasonDays = days.filter((d) => season.months.includes(d.month));
@@ -116,24 +131,32 @@ export function aggregatePower(json, { startDate, endDate }) {
       const y = seasonYearOf(d, season);
       (buckets[y] ||= []).push(d);
     }
-    const expectedDays = seasonDays.length / Math.max(1, Object.keys(buckets).length);
     const perYear = Object.entries(buckets)
-      .map(([year, bucket]) => {
+      .map(([yearText, bucket]) => {
+        const year = Number(yearText);
+        const expectedDays = expectedSeasonDays(season, year);
         const precipValid = bucket.map((d) => get("PRECTOTCORR", d.key)).filter((v) => v != null);
+        const tempValid = bucket.map((d) => get("T2M", d.key)).filter((v) => v != null);
+        const maxTempValid = bucket.map((d) => get("T2M_MAX", d.key)).filter((v) => v != null);
+        const completeWindow = bucket.length >= expectedDays * 0.95;
+        const adequateCoverage = precipValid.length >= bucket.length * 0.95 && tempValid.length >= bucket.length * 0.95;
         return {
-          year: Number(year),
+          year,
           days: bucket.length,
-          complete: bucket.length >= expectedDays * 0.95,
-          precip_mm: precipValid.length === bucket.length ? precipValid.reduce((a, b) => a + b, 0) : null,
+          expected_days: expectedDays,
+          complete: completeWindow && adequateCoverage,
+          precip_mm: completeWindow && precipValid.length >= bucket.length * 0.95
+            ? precipValid.reduce((a, b) => a + b, 0)
+            : null,
           t2m_c: mean(bucket.map((d) => get("T2M", d.key))),
-          t2m_max_c: mean(bucket.map((d) => get("T2M_MAX", d.key))),
+          t2m_max_c: maxTempValid.length >= bucket.length * 0.95 ? mean(maxTempValid) : null,
           gwetroot: mean(bucket.map((d) => get("GWETROOT", d.key))),
-          heat_days_35: bucket.filter((d) => (get("T2M_MAX", d.key) ?? -999) >= 35).length,
-          heat_days_38: bucket.filter((d) => (get("T2M_MAX", d.key) ?? -999) >= 38).length,
-          heavy_rain_days_50: bucket.filter((d) => (get("PRECTOTCORR", d.key) ?? 0) >= 50).length,
+          heat_days_35: bucket.filter((d) => { const value = get("T2M_MAX", d.key); return value != null && value >= 35; }).length,
+          heat_days_38: bucket.filter((d) => { const value = get("T2M_MAX", d.key); return value != null && value >= 38; }).length,
+          heavy_rain_days_50: bucket.filter((d) => { const value = get("PRECTOTCORR", d.key); return value != null && value >= 50; }).length,
         };
       })
-      .filter((p) => p.complete && p.precip_mm != null && p.t2m_c != null)
+      .filter((p) => p.complete && p.precip_mm != null && p.t2m_c != null && p.t2m_max_c != null)
       .sort((a, b) => a.year - b.year);
 
     seasons[season.value] = {
@@ -153,6 +176,31 @@ export function aggregatePower(json, { startDate, endDate }) {
   }
 
   const keyParams = mean([coverage.T2M, coverage.PRECTOTCORR]);
+  const daily = days.map((d) => ({
+    date: d.key,
+    precip_mm: get("PRECTOTCORR", d.key),
+    t2m_c: get("T2M", d.key),
+    t2m_max_c: get("T2M_MAX", d.key),
+    rh2m: get("RH2M", d.key),
+    gwetroot: get("GWETROOT", d.key),
+    solar_mj: get("ALLSKY_SFC_SW_DWN", d.key),
+    ws2m: get("WS2M", d.key),
+  }));
+  const sumValid = (values) => {
+    const valid = values.filter((v) => v != null && Number.isFinite(v));
+    return valid.length ? round(valid.reduce((a, b) => a + b, 0), 1) : null;
+  };
+  const recentSummary = {
+    days_requested: days.length,
+    rainfall_total_mm: sumValid(daily.map((d) => d.precip_mm)),
+    rainfall_days_available: daily.filter((d) => d.precip_mm != null).length,
+    mean_temp_c: round(mean(daily.map((d) => d.t2m_c)), 2),
+    mean_max_temp_c: round(mean(daily.map((d) => d.t2m_max_c)), 2),
+    mean_humidity_pct: round(mean(daily.map((d) => d.rh2m)), 1),
+    mean_root_zone_wetness: round(mean(daily.map((d) => d.gwetroot)), 3),
+    mean_solar_mj: round(mean(daily.map((d) => d.solar_mj)), 2),
+    mean_wind_ms: round(mean(daily.map((d) => d.ws2m)), 2),
+  };
 
   return {
     source: "NASA POWER — Daily point API (Agroclimatology community)",
@@ -161,10 +209,13 @@ export function aggregatePower(json, { startDate, endDate }) {
       longitude: json?.geometry?.coordinates?.[0],
       startDate,
       endDate,
+      timeStandard: "UTC",
     }),
     api_version: json?.header?.api?.version || null,
     model_sources: json?.header?.sources || [],
-    time_standard: json?.header?.time_standard || null,
+    time_standard: json?.header?.time_standard || "UTC",
+    data_mode: dataMode,
+    parameter_latest_dates: parameterLatestDates,
     elevation_m: json?.geometry?.coordinates?.[2] ?? null,
     fill_value: fill,
     start_date: startDate,
@@ -173,6 +224,8 @@ export function aggregatePower(json, { startDate, endDate }) {
     units: unitMap,
     coverage,
     coverage_key: round(keyParams, 4),
+    recent_summary: recentSummary,
+    daily: dataMode === "recent_30d" || dataMode === "recent_90d" ? daily : [],
     annual,
     monthly,
     seasons,
