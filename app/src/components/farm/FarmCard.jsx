@@ -18,6 +18,7 @@ export default function FarmCard({ farm, active, onActivate, onEdit, onDelete })
           <div className="flex items-center gap-2">
             <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" strokeWidth={1.9} />
             <p className="truncate text-[14px] font-medium">{farm.name}</p>
+            {farm.is_demo && <span className="chip shrink-0">Demo</span>}
           </div>
           <p className="mt-1 text-[11.5px] text-muted-foreground">
             {farm.district || t("District not set")} · {farm.area_ha ? `${farm.area_ha} ha` : t("area not set")}
