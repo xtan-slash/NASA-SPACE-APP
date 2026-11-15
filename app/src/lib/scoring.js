@@ -15,6 +15,17 @@ export const ENGINE_VERSION = "1.0.0";
 export const EFFECTIVE_RAIN_FACTOR = 0.75; // share of season rainfall assumed plant-available
 export const PH_PENALTY_PER_UNIT = 14;
 export const TEMP_PENALTY_PER_DEG = 11;
+
+// Broad India mainland bounding box. This rejects clearly offshore/out-of-country
+// points before a POWER request; it is not a coastline or island landmask.
+export const INDIA_BOUNDS = { minLat: 6.0, maxLat: 37.2, minLon: 68.0, maxLon: 97.5 };
+export function isWithinIndiaBounds(latitude, longitude) {
+  const lat = Number(latitude);
+  const lon = Number(longitude);
+  return Number.isFinite(lat) && Number.isFinite(lon) &&
+    lat >= INDIA_BOUNDS.minLat && lat <= INDIA_BOUNDS.maxLat &&
+    lon >= INDIA_BOUNDS.minLon && lon <= INDIA_BOUNDS.maxLon;
+}
 const POORLY_DRAINED = ["clay", "clay_loam", "vertisol"];
 const IRRIGATION_MM = Object.fromEntries(IRRIGATION.map((i) => [i.value, i.assumed_mm]));
 
@@ -56,6 +67,7 @@ export function validateFarm(farm) {
   const lon = Number(farm?.longitude);
   if (!Number.isFinite(lat) || lat < -90 || lat > 90) errors.push("Latitude must be between -90 and 90.");
   if (!Number.isFinite(lon) || lon < -180 || lon > 180) errors.push("Longitude must be between -180 and 180.");
+  else if (Number.isFinite(lat) && !isWithinIndiaBounds(lat, lon)) errors.push("Coordinates must fall within the supported India bounding box before requesting NASA POWER data.");
   const area = Number(farm?.area_ha);
   if (!Number.isFinite(area) || area <= 0) errors.push("Area must be a positive number of hectares.");
   if (farm?.soil_ph !== null && farm?.soil_ph !== undefined && farm?.soil_ph !== "") {
@@ -238,7 +250,8 @@ function scoreYear({ farm, crop, entry, season, prevCrop }) {
 }
 
 function diversityBlock(entries, cropsById) {
-  const crops = entries.map((e) => cropsById[e.crop_id]).filter(Boolean);
+  const orderedEntries = [...entries].sort((a, b) => a.year - b.year || seasonIndex(a.season) - seasonIndex(b.season));
+  const crops = orderedEntries.map((e) => cropsById[e.crop_id]).filter(Boolean);
   const n = crops.length;
   if (!n) return { score: null, details: null, flags: ["No crops resolved for this sequence."] };
   const familyCounts = {};
@@ -259,19 +272,35 @@ function diversityBlock(entries, cropsById) {
   else legumeScore = clamp(100 - (legumeShare - 0.5) * 90);
   let transitions = 0;
   let differing = 0;
-  for (let i = 1; i < crops.length; i += 1) {
+  let skippedGaps = 0;
+  const sequenceIndex = (entry) => entry.year * 3 + seasonIndex(entry.season);
+  for (let i = 1; i < orderedEntries.length; i += 1) {
+    const previous = orderedEntries[i - 1];
+    const current = orderedEntries[i];
+    const previousCrop = cropsById[previous.crop_id];
+    const currentCrop = cropsById[current.crop_id];
+    if (!previousCrop || !currentCrop) continue;
+    if (sequenceIndex(current) !== sequenceIndex(previous) + 1) {
+      skippedGaps += Math.max(1, sequenceIndex(current) - sequenceIndex(previous) - 1);
+      continue;
+    }
     transitions += 1;
-    if ((crops[i].family || "unknown") !== (crops[i - 1].family || "unknown")) differing += 1;
+    if ((currentCrop.family || "unknown") !== (previousCrop.family || "unknown")) differing += 1;
   }
-  const alternation = transitions ? differing / transitions : 0;
+  // With no directly adjacent cropped seasons, alternation is neutral rather than
+  // a penalty. Empty/fallow slots are excluded from crop counts and transitions.
+  const alternation = transitions ? differing / transitions : 0.5;
   const score = clamp(100 * (0.4 * shannonNorm + 0.35 * (legumeScore / 100) + 0.25 * alternation));
   const flags = [];
+  if (skippedGaps > 0) flags.push(`${skippedGaps} empty/fallow season slot(s) were excluded from consecutive-family checks.`);
   if (legumeShare < 0.2) flags.push("Fewer than one in five seasons is a legume.");
   if (alternation < 0.6) flags.push("Same crop family repeats in consecutive seasons.");
   return {
     score,
     details: {
       seasons: n,
+      empty_seasons_excluded: skippedGaps,
+      adjacent_transitions: transitions,
       families: Object.keys(familyCounts),
       family_counts: familyCounts,
       shannon,
@@ -311,15 +340,18 @@ export function scoreScenario({ farm, climate, crops, scenario }) {
     .map((e) => ({ ...e, __climate: climate, __seasonValue: e.season }));
 
   let prevCrop = null;
+  let prevEntry = null;
   const years = [];
   if (farm) {
     for (const entry of usableEntries) {
       const crop = cropsById[entry.crop_id];
       const season = SEASON_BY_VALUE[entry.season];
       if (!season) continue;
-      const scored = scoreYear({ farm, crop, entry, season, prevCrop });
+      const adjacent = prevEntry && entry.year * 3 + seasonIndex(entry.season) === prevEntry.year * 3 + seasonIndex(prevEntry.season) + 1;
+      const scored = scoreYear({ farm, crop, entry, season, prevCrop: adjacent ? prevCrop : null });
       years.push(scored);
       prevCrop = crop;
+      prevEntry = entry;
     }
   }
 
@@ -376,10 +408,21 @@ export function scoreScenario({ farm, climate, crops, scenario }) {
 
   const confidenceLevel = (() => {
     if (status !== "ok") return "none";
+
+    // Demo crop parameters are an explicit low-confidence condition in the
+    // published methodology, even when they are the only listed gap.
+    if (demoCrops.length > 0) return "low";
+
     const hardMissing = missing.length;
-    if (hardMissing === 0 && (coverage == null || coverage >= 0.97)) return "high";
-    if (hardMissing <= 1) return "medium";
-    return "low";
+    if (hardMissing >= 2) return "low";
+    if (coverage != null && coverage < 0.9) return "low";
+
+    // High confidence requires a loaded climate record with at least 97%
+    // coverage, complete farm inputs, and no illustrative crop parameters.
+    if (hardMissing === 0 && coverage != null && coverage >= 0.97) return "high";
+
+    // One hard gap or 90–97% climate coverage is medium confidence.
+    return "medium";
   })();
 
   const uncertainty = [];
