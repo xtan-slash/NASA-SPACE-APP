@@ -42,6 +42,11 @@ function FarmPage() {
 
   const editing = editingId === "new" ? null : farms.find((f) => f.id === editingId) || null;
 
+  const handleActivate = (id) => {
+    setActiveFarm(id);
+    window.location.reload();
+  };
+
   const handleSaved = async (saved) => {
     await reload();
     if (saved?.id) setActiveFarm(saved.id);
@@ -75,7 +80,7 @@ function FarmPage() {
       />
 
       <Notice tone="warn" title="Demo inputs are labelled">
-        The seeded Harohalli farm uses illustrative soil values, not a laboratory soil test. Replace them with
+        Any farm record marked as a demo uses illustrative soil values, not a laboratory soil test. Replace them with
         your own values before drawing conclusions — the advisor repeats whatever provenance is recorded here.
       </Notice>
 
@@ -116,7 +121,7 @@ function FarmPage() {
               key={f.id}
               farm={f}
               active={f.id === activeFarm?.id}
-              onActivate={() => setActiveFarm(f.id)}
+              onActivate={() => handleActivate(f.id)}
               onEdit={() => setEditingId(f.id)}
               onDelete={() => setConfirm(f)}
             />
