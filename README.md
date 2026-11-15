@@ -1,72 +1,109 @@
 # TerraShift AI
+
 ### Field Shift: Adapting Farms with NASA Data | NASA Space Apps Challenge 2026
 
-TerraShift AI is an AI-assisted, explainable web app for exploring crop-rotation strategies using NASA climate context and farm-entered information. Harohalli, Karnataka is the original pilot, while farm setup now supports locations across India.
+TerraShift AI is an AI-assisted, explainable web application for exploring crop-rotation scenarios using NASA climate context, farm-entered information, and configurable crop characteristics. Harohalli, Karnataka is the original demonstration pilot. Farm setup supports locations across India.
 
-> **Decision support, not a prescription.** Scores are prototype suitability indicators based on disclosed inputs and assumptions. They are not validated yield, income, nutrient-balance, or guaranteed soil-improvement predictions. Farmers and local agricultural experts remain the decision-makers.
+> **Decision support, not an agronomic prescription.** The current scores are prototype suitability indicators based on disclosed inputs, assumptions, and heuristics. They are not validated yield, income, nutrient-balance, or soil-improvement predictions. Farmers and qualified local agricultural experts remain the decision-makers.
 
-## Challenge
-The official Field Shift brief asks teams to combine NASA Earth observations with local soil information, crop characteristics, and farmer priorities. It asks for comparison of at least three rotation strategies, including the existing rotation where known, and an explanation of evidence, potential benefits, information gaps, and risks.
+## Project links
 
-Official brief: https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/
+- **Live application:** https://terra-shift-ai-earth.base44.app/
+- **GitHub repository:** https://github.com/xtan-slash/NASA-SPACE-APP
+- **Figma design:** https://www.figma.com/design/vm1vpLWyygL4nhNInOjrwK/
+- **NASA Space Apps challenge:** https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/
+- **Harohalli local event:** https://www.spaceappschallenge.org/2026/local-events/harohalli/
 
-## Current application
-The runnable app is hosted in Base44 and built with TanStack Start, React 19, and the Base44 SDK.
+## What the application currently includes
 
-- Farm setup with location search and manual coordinates for locations across India.
-- Soil, irrigation, and farmer-priority inputs with provenance/demo disclosures.
-- Configurable crop library.
-- NASA POWER Daily Point API integration for historical climate context.
-- Daily data parsing, annual/monthly/seasonal aggregation, and missing-data coverage.
-- Deterministic scoring across soil, water, climate, and crop diversity.
-- Scenario simulator, comparison view, methodology page, and evidence-grounded AI advisor.
+- Farm setup with India-wide location search and manual coordinates.
+- Farm-entered soil, irrigation, and farmer-priority information.
+- A configurable crop catalogue, with private per-account crop additions and overrides.
+- Historical climate retrieval through the NASA POWER Daily Point API.
+- Daily data parsing, annual/monthly/seasonal aggregation, and missing-data coverage reporting.
+- Deterministic scenario scoring across soil, water, climate, and crop diversity.
+- Crop-rotation scenario creation, simulation, and comparison.
+- An AI advisor for authenticated workspace scenarios and deterministic explanations in the public demo.
 - English, Hindi, and Kannada language options.
-- Sign-in, registration, password reset, MFA routes, signed-in app gate, and creator-only private records.
-- Private per-account UserCrop overrides, account-specific active-farm selection, and a private Harohalli demo-farm copy seeded when each account loads its farm list.
-- Public read-only demonstration routes, including Judge Mode, isolated from private workspace records.\n- Landing-page coordinate preview, location cue graphic, and loading skeletons.
-- Mobile-friendly comparison and season score cards.
-- Per-runtime API throttling, stricter date/coordinate validation, security response headers, and dependency remediation.
+- Sign-in, registration, password recovery, MFA routes, and a protected workspace.
+- Private per-account Farm, Scenario, ClimateSnapshot, and UserCrop records.
+- Public, read-only demonstration routes using fixed sample data.
+- Input validation, response security headers, and best-effort server-function request throttling.
 
-**Base44 app:** https://app.base44.com/apps/6af80c5819da5107aefce1e2/editor/preview
+The current implementation and outstanding work are tracked in [Project status](docs/project-status.md).
 
-## NASA data
-**Integrated:** NASA POWER Daily Point API (Agroclimatology community). See [NASA data sources](docs/nasa-data-sources.md).
+## NASA data: integrated and not yet integrated
 
-The app requests T2M, T2M_MAX, T2M_MIN, PRECTOTCORR, RH2M, GWETROOT, ALLSKY_SFC_SW_DWN, and WS2M. The current pilot history is 2020–2025. This is historical context, not a forecast for 2026–2029.
+**Integrated:** NASA POWER Daily Point API (Agroclimatology community).
 
-**Not yet integrated:** SMAP, GPM/IMERG, Landsat, MODIS/VIIRS, ECOSTRESS, and SRTM. Do not present these as live app data until implemented and verified.
+The application requests:
 
-NASA POWER API docs: https://power.larc.nasa.gov/docs/services/api/temporal/daily/
+| Parameter | Meaning |
+| --- | --- |
+| T2M | Mean air temperature |
+| T2M_MAX | Maximum air temperature |
+| T2M_MIN | Minimum air temperature |
+| PRECTOTCORR | Bias-corrected precipitation |
+| RH2M | Relative humidity at 2 m |
+| GWETROOT | Root-zone soil wetness |
+| ALLSKY_SFC_SW_DWN | All-sky shortwave irradiance |
+| WS2M | Wind speed at 2 m |
 
-## Pilot and agronomic context
-The original demo point is 12.68° N, 77.48° E. It is not a surveyed farm boundary or verified field centroid. Harohalli/Ramanagara is treated as UAS Bengaluru Agro-climatic Zone 5, Eastern Dry Zone, in the current local-context note.
+The current Harohalli demonstration uses historical data for 2020–2025. These records are historical gridded climate context, not a forecast for 2026–2029 and not measurements from sensors installed on a farm.
 
-No farmer interview or verified farm crop history is available. The current ragi monocrop, ragi–horsegram, and maize–horsegram scenarios are illustrative hypotheses, not a real farmer baseline or validated recommendations. The simulator currently models one crop per season and does not model intercropping.
+**Not integrated:** SMAP, GPM/IMERG, Landsat, MODIS/VIIRS, ECOSTRESS, and SRTM. These are possible future data sources and must not be described as active application inputs.
+
+See [NASA data sources and provenance](docs/nasa-data-sources.md).
+
+## Pilot context and agronomic limitations
+
+- The original demonstration point is 12.68° N, 77.48° E. It is not a surveyed farm boundary or verified field centroid.
+- The Harohalli/Ramanagara pilot context is treated as UAS Bengaluru Agro-climatic Zone 5, Eastern Dry Zone.
+- No farmer interview or verified farm-level crop history is currently available.
+- The ragi monocrop, ragi–horsegram, and maize–horsegram sequences are illustrative comparison scenarios, not an observed farmer baseline or validated recommendations.
+- Demo crop parameters and demo soil values are illustrative unless a traceable source is recorded.
+- The simulator currently models one crop per season. It does not model intercropping.
 
 See [local crop context](docs/local-crop-context.md).
 
-## Scoring and limitations
-The deterministic scoring engine is documented in [scoring methodology](docs/scoring-methodology.md). Default normalized weights are Soil 30%, Water 30%, Climate 25%, and Diversity 15%. Heuristics and assumptions are disclosed in the method. Demo crop parameters and demo soil inputs must not be presented as verified facts.
+## Scoring and interpretation
+
+The deterministic scoring engine compares four dimensions using default normalized weights:
+
+- Soil: 30%
+- Water: 30%
+- Climate: 25%
+- Crop diversity: 15%
+
+Weights can be configured. When a dimension cannot be scored because required information is missing, it is excluded and the remaining available weights are renormalized. The application reports missing information and assumptions alongside the score.
+
+The scoring system is a transparent prototype heuristic. Its confidence label is not a probability, and a higher composite score does not establish that a rotation is agronomically superior.
+
+See [scoring methodology](docs/scoring-methodology.md).
 
 ## Security and account model
-Farm, Scenario, and ClimateSnapshot records use owner/admin access rules. The shared Crop library remains publicly readable, while crop create/update/delete are admin-only. The app's protected workspace requires sign-in; climate loading and AI scenario explanation backend functions require an authenticated user.
 
-See [security and authentication](docs/security-and-authentication.md). The latest static security audit, lint, dependency audit, and build pass on Base44 checkpoint `6af984dddb460f31c37984ca` (not yet deployed). Live anonymous and two-account authorization tests remain outstanding, so do not treat the configuration as independently security-audited.
+The private workspace uses creator-only read, update, and delete access for Farm, Scenario, ClimateSnapshot, and UserCrop records. Signed-in users can create their own records. Admin accounts do not have a cross-account read/update/delete bypass for these private entities.
+
+The shared Crop master catalogue is publicly readable and admin-write only. Personal crop additions and edits are stored separately in UserCrop. The public demo uses fixed sample data and is designed not to access private workspace records.
+
+Static checks have passed in the current Base44 workspace, but live anonymous-access, two-account isolation, and authentication lifecycle tests remain outstanding. Per-runtime in-memory throttling is best-effort and is not a globally distributed rate limiter. These checks do not amount to an independent security audit.
+
+See [security and authentication](docs/security-and-authentication.md).
+
+## Repository and source status
+
+The tracked application source is mirrored under [app/](app/), including routes, components, scoring and data logic, translations, Base44 entity schemas, configuration, and dependency files. GitHub is a source mirror of the Base44 workspace, not an automatic two-way sync. A change in one environment should not be assumed to have reached the other until it is synced and verified.
+
+The latest repository source snapshot referenced by the project status is commit `8552bda` (15 November 2026). The current Base44 workspace reports version `6cd411f6a451ca20e448513ac089ea6b2312f0bc`. These identifiers refer to different systems and should not be treated as proof that a particular Base44 checkpoint is deployed to production.
+
+For the latest validation results and remaining verification tasks, see [Project status](docs/project-status.md).
 
 ## Documentation
+
 - [System architecture](docs/architecture.md)
 - [NASA data sources and provenance](docs/nasa-data-sources.md)
 - [Scoring methodology](docs/scoring-methodology.md)
 - [Local crop context](docs/local-crop-context.md)
 - [Security and authentication](docs/security-and-authentication.md)
-- [Current project status and next steps](docs/project-status.md)
-
-## Design
-Figma product UI: https://www.figma.com/design/vm1vpLWyygL4nhNInOjrwK
-
-## Repository scope
-The full tracked application source is mirrored from the Base44 workspace into [`app/`](app/), including routes, components, scoring and data logic, translation dictionaries, Base44 entity schemas, configuration, and the dependency lockfile. This snapshot was refreshed on 15 November 2026 from Base44 source commit `d7ed4d726fb83739623485e1b6abd9747765a974`, including the location cue, loading skeletons, Hindi/Kannada updates, API throttling, security headers, input validation, and dependency remediation. Latest Base44 checkpoint: `6af984dddb460f31c37984ca` (not deployed to production). This is a source snapshot, not an automatic two-way sync with Base44.
-
-## Local event
-Harohalli local event: https://www.spaceappschallenge.org/2026/local-events/harohalli/
-Global offers: https://www.spaceappschallenge.org/2026/global-offers/
+- [Project status and next steps](docs/project-status.md)
