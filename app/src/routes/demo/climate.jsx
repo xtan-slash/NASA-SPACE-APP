@@ -56,7 +56,19 @@ function DemoClimate() {
           : "These values use the recorded Harohalli NASA POWER demonstration dataset. They describe the model grid cell, not the field, and are historical — not a forecast."}
       </Notice>
 
-      <SnapshotManifest snapshot={{...DEMO_SNAPSHOT, latitude: locationData.location.latitude, longitude: locationData.location.longitude, retrieved_at: payload.retrieved_at_utc || DEMO_SNAPSHOT.retrieved_at}} payload={payload} />
+      {(!locationData.hasPoint || locationData.data) && (
+        <SnapshotManifest
+          snapshot={{
+            ...DEMO_SNAPSHOT,
+            latitude: locationData.data ? locationData.location.latitude : DEMO_SNAPSHOT.latitude,
+            longitude: locationData.data ? locationData.location.longitude : DEMO_SNAPSHOT.longitude,
+            start_date: payload.start_date || DEMO_SNAPSHOT.start_date,
+            end_date: payload.end_date || DEMO_SNAPSHOT.end_date,
+            retrieved_at: payload.retrieved_at_utc || DEMO_SNAPSHOT.retrieved_at,
+          }}
+          payload={payload}
+        />
+      )}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="panel p-4">
