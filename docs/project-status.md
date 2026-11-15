@@ -11,7 +11,6 @@ _Last reviewed: 15 November 2026_
 - **Live application:** https://terra-shift-ai-earth.base44.app/
 - **Base44 workspace:** https://app.base44.com/apps/6af80c5819da5107aefce1e2
 - **GitHub:** https://github.com/xtan-slash/NASA-SPACE-APP
-- **Figma:** https://www.figma.com/design/vm1vpLWyygL4nhNInOjrwK/
 
 ## Implemented application capabilities
 
@@ -115,4 +114,4 @@ No GitHub commit status checks were reported for the reviewed source commit. The
 
 ## Design status
 
-The Figma file contains an editable TerraShift AI dashboard frame and reusable KPI card component. Climate Explorer was the next planned design screen and is not recorded as completed.
+The Figma exploration was cancelled. No Figma design file is part of the project deliverables or should be listed as a resource used by TerraShift AI.
