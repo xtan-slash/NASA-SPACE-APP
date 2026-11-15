@@ -59,8 +59,8 @@ function EvidenceTable({ scenario }) {
         ))}
       </div>
       <p className="mt-2 text-[10.5px] text-muted-foreground">
-        Confidence {scenario.confidence} · weights soil {scenario.weights_pct?.soil}%, water{" "}
-        {scenario.weights_pct?.water}%, climate {scenario.weights_pct?.climate}%, diversity{" "}
+        {t("Confidence")} {t(scenario.confidence)} · {t("weights")} {t("soil")} {scenario.weights_pct?.soil}%, {t("water")}{" "}
+        {scenario.weights_pct?.water}%, {t("climate")} {scenario.weights_pct?.climate}%, {t("diversity")}{" "}
         {scenario.weights_pct?.diversity}%
       </p>
       {scenario.missing?.length > 0 && (
@@ -75,7 +75,7 @@ function EvidenceTable({ scenario }) {
 }
 
 function AdvisorPage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const search = Route.useSearch();
   const { farms, loading: farmsLoading } = useFarms();
   const { farm, ready } = useActiveFarm(farms, farmsLoading);
@@ -127,7 +127,7 @@ function AdvisorPage() {
     setAnswer(null);
     try {
       const res = await run({
-        data: { scenarioIds: selected, question: (text || "").trim().slice(0, 500) || undefined },
+        data: { scenarioIds: selected, question: (text || "").trim().slice(0, 500) || undefined, language: lang },
       });
       setAnswer(res);
     } catch (err) {
@@ -147,10 +147,13 @@ function AdvisorPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Step 6 · Explanation"
-        title="AI advisor"
-        description="The advisor receives the computed score tables — never the raw field or a blank prompt. It is instructed to cite only numbers that appear in those tables, and to name the gaps."
+        kicker={t("Step 6 · Explanation")}
+        title={t("AI advisor")}
+        description={t("Generative AI explanation grounded in server-recomputed score tables. The model receives computed evidence and data gaps, not an unrestricted prompt about the farm.")}
       />
+      <Notice tone="info" title={t("Private workspace · generative AI")}>
+        {t("The advisor uses a language model to explain the computed scenario evidence in natural language. The scoring engine itself remains deterministic: AI does not calculate, alter or rank the scores. Verify quoted values against the evidence panel.")}
+      </Notice>
 
       {!farmsLoading && farms.length === 0 ? (
         <Notice tone="warn" title="Add a farm first">
@@ -210,7 +213,7 @@ function AdvisorPage() {
                 maxLength={500}
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                placeholder="Ask about the numbers in the score table — e.g. why water is low in rabi."
+                placeholder={t("Ask about the numbers in the score table — e.g. why water is low in rabi.")}
               />
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {PRESETS.map((p) => (
@@ -223,7 +226,7 @@ function AdvisorPage() {
                     }}
                     className="rounded-full border border-border bg-card px-2.5 py-1 text-[10.5px] text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
                   >
-                    {p}
+                    {t(p)}
                   </button>
                 ))}
               </div>
@@ -236,8 +239,7 @@ function AdvisorPage() {
                 {busy ? t("Grounding the explanation…") : t("Explain the scores")}
               </Button>
               <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
-                The scores are recomputed on the server from the saved records and the NASA POWER snapshot
-                before the model sees anything.
+                {t("The scores are recomputed on the server from the saved records and the NASA POWER snapshot before the model sees anything.")}
               </p>
             </div>
 
@@ -255,7 +257,7 @@ function AdvisorPage() {
                   ))}
                 </div>
                 <p className="mt-2 text-[10px] text-muted-foreground">
-                  Same engine version as the server, so these match what the advisor was given.
+                  {t("Same engine version as the server, so these match what the advisor was given.")}
                 </p>
               </div>
             )}
@@ -289,7 +291,7 @@ function AdvisorPage() {
 
               {!busy && answer && !answer.ok && (
                 <Notice tone="danger" title="No AI explanation this time" className="mt-3">
-                  {answer.error}
+                  {t(answer.error)}
                 </Notice>
               )}
 
@@ -302,9 +304,7 @@ function AdvisorPage() {
               <div className="mt-4 flex items-start gap-2 rounded-lg border border-border/70 bg-secondary/40 p-2.5">
                 <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                 <p className="text-[10.5px] leading-relaxed text-muted-foreground">
-                  Model-generated prose, bounded by the tables below. It is not agronomic advice, carries no
-                  yield claim, and can still misread a value — check the numbers it cites against the
-                  evidence panel.
+                  {t("Model-generated prose, bounded by the tables below. It is not agronomic advice, carries no yield claim, and can still misread a value — check the numbers it cites against the evidence panel.")}
                 </p>
               </div>
             </div>
@@ -325,10 +325,10 @@ function AdvisorPage() {
                     <dl className="mt-1.5 space-y-0.5 text-[10.5px] text-muted-foreground">
                       <div className="flex justify-between gap-2">
                         <dt>pH</dt>
-                        <dd className="metric">{evidence.farm?.soil_ph ?? "not entered"}</dd>
+                        <dd className="metric">{evidence.farm?.soil_ph ?? t("not entered")}</dd>
                       </div>
                       <div className="flex justify-between gap-2">
-                        <dt>Organic carbon</dt>
+                        <dt>{t("Organic carbon")}</dt>
                         <dd className="metric">
                           {evidence.farm?.soil_organic_carbon_pct != null
                             ? `${evidence.farm.soil_organic_carbon_pct} %`
@@ -337,15 +337,15 @@ function AdvisorPage() {
                       </div>
                       <div className="flex justify-between gap-2">
                         <dt>Texture</dt>
-                        <dd>{evidence.farm?.soil_texture || "not entered"}</dd>
+                        <dd>{t(evidence.farm?.soil_texture || "not entered")}</dd>
                       </div>
                       <div className="flex justify-between gap-2">
                         <dt>Irrigation</dt>
-                        <dd>{evidence.farm?.irrigation || "not set"}</dd>
+                        <dd>{t(evidence.farm?.irrigation || "not set")}</dd>
                       </div>
                     </dl>
                     <p className="mt-1.5 text-[10px] text-muted-foreground">
-                      Source: {evidence.farm?.soil_source || "not recorded"}
+                      {t("Source")}: {t(evidence.farm?.soil_source || "not recorded")}
                     </p>
                   </div>
 
@@ -357,20 +357,20 @@ function AdvisorPage() {
                         <p className="metric">
                           {evidence.climate.requested_start}–{evidence.climate.requested_end}
                         </p>
-                        <p>Coverage {evidence.climate.coverage_pct}% of expected days</p>
-                        <p>Elevation {evidence.climate.elevation_m ?? "—"} m (model grid)</p>
+                        <p>{t("Coverage")} {evidence.climate.coverage_pct}% {t("of expected days")}</p>
+                        <p>{t("Elevation")} {evidence.climate.elevation_m ?? "—"} m ({t("model grid")})</p>
                         <div className="mt-1.5 space-y-0.5">
                           {Object.entries(evidence.climate.seasons || {}).map(([k, v]) => (
                             <p key={k}>
-                              <span className="capitalize">{k}</span>: {v.precipitation_mm} mm,{" "}
-                              {v.mean_temp_c} °C, {v.heat_days_35c} heat days
+                              <span className="capitalize">{t(k === "kharif" ? "Kharif" : k === "rabi" ? "Rabi" : k)}</span>: {v.precipitation_mm} mm,{" "}
+                              {v.mean_temp_c} °C, {v.heat_days_35c} {t("heat days")}
                             </p>
                           ))}
                         </div>
                       </div>
                     ) : (
                       <p className="mt-1.5 text-[10.5px] text-muted-foreground">
-                        No NASA POWER snapshot was available for this farm.
+                        {t("No NASA POWER snapshot was available for this farm.")}
                       </p>
                     )}
                   </div>
@@ -378,7 +378,7 @@ function AdvisorPage() {
 
                 {answer.deterministic?.length > 0 && (
                   <div className="mt-3 rounded-xl border border-border/70 bg-secondary/30 p-3">
-                    <p className="text-[11.5px] font-medium">Deterministic summary (no model involved)</p>
+                    <p className="text-[11.5px] font-medium">{t("Deterministic summary (no model involved)")}</p>
                     <ul className="mt-1 space-y-1 text-[10.5px] leading-relaxed text-muted-foreground">
                       {answer.deterministic.map((d) => (
                         <li key={d.scenario}>{d.summary}</li>
