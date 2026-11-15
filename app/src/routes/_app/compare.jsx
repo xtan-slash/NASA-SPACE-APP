@@ -132,8 +132,18 @@ function ComparePage() {
       ) : (
         <>
           <Notice tone="warn" title="Illustrative comparison, not a farmer baseline">
-            No farmer interview or farm-level crop history was available. The ragi monocrop baseline and both alternatives are hypothetical research scenarios. The farm soil profile, farm coordinates and crop parameters are demo inputs. NASA POWER data currently covers 2020–2025 and is used as historical seasonal context for the 2026–2029 scenarios, not as a forecast. Scores are prototype suitability indicators, not validated agronomic recommendations or yield predictions. Scenarios with different numbers or types of cropped seasons have different cropping-intensity assumptions; their overall scores should not be treated as a like-for-like ranking.
+            No farmer interview or farm-level crop history was available. The ragi monocrop baseline and both alternatives are hypothetical research scenarios. The farm soil profile, farm coordinates and crop parameters are demo inputs. Scores use the latest available NASA POWER historical snapshot with seasonal evidence, shown in the climate data manifest, not the recent 30/90-day monitor and not a forecast for the scenario years. Scores are prototype suitability indicators, not validated agronomic recommendations or yield predictions. Scenarios with different numbers or types of cropped seasons have different cropping-intensity assumptions; their overall scores should not be treated as a like-for-like ranking.
           </Notice>
+          <div className="rounded-xl border border-border/70 bg-card px-4 py-3 text-[11px] text-muted-foreground">
+            {climate ? (
+              <>
+                <span className="font-medium text-foreground">Historical climate input for these scores:</span>{" "}
+                {climate.start_date} to {climate.end_date} · {climate.data_mode || latest?.data_mode || "legacy/custom"} · {climate.time_standard || latest?.time_standard || "time standard not recorded"}.
+              </>
+            ) : (
+              "No usable historical NASA POWER seasonal snapshot is available. Climate and water suitability may be unscored."
+            )}
+          </div>
           <div className="panel p-4">
             <div className="flex items-center justify-between">
               <p className="kicker">{t("Scenarios in the comparison")}</p>
@@ -192,7 +202,7 @@ function ComparePage() {
             <div className="px-4 pt-4">
               <h2 className="text-[15px] font-medium">{t("Score table")}</h2>
             </div>
-            <div className="mt-2 overflow-x-auto">
+            <div className="mt-2 hidden overflow-x-auto md:block">
               <table className="w-full min-w-[640px] text-[11.5px]">
                 <thead>
                   <tr className="border-b border-border/70 text-left text-muted-foreground">
@@ -225,6 +235,28 @@ function ComparePage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+            <div className="grid gap-2 p-3 md:hidden">
+              {rows.map((r) => (
+                <article key={r.id} className="rounded-lg border border-border/70 bg-card p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="min-w-0 text-[12px] font-medium leading-snug">{r.name}</h3>
+                    <span className="metric shrink-0 text-[13px] font-semibold">{r.result?.overall == null ? "—" : r.result.overall.toFixed(1)}</span>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-[10.5px]">
+                    {DIMENSION_KEYS.map((k) => (
+                      <div key={k} className="flex items-center justify-between gap-2">
+                        <span className="text-muted-foreground">{t(DIMENSION_LABEL[k]).replace(" suitability", "")}</span>
+                        <span className="metric">{r.result?.dimension_scores?.[k] == null ? "—" : r.result.dimension_scores[k].toFixed(1)}</span>
+                      </div>
+                    ))}
+                    <div className="col-span-2 flex items-center justify-between border-t border-border/60 pt-2">
+                      <span className="text-muted-foreground">{t("Confidence")}</span>
+                      <span className="capitalize">{r.result?.confidence?.level || "none"}</span>
+                    </div>
+                  </div>
+                </article>
+              ))}
             </div>
           </div>
 
