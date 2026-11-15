@@ -37,9 +37,9 @@ _Last updated: 15 November 2026 (latest source sync)_
 - Mobile card layouts for multi-year score comparisons and simulator season-by-season breakdowns.
 
 ## Latest deployed and validated state
-- Latest deployment: 15 November 2026.
-- Base44 checkpoint: `6af9786e08b3f90cc6196912`.
-- Base44 source commit: `dddbf773138800dd5129ccc19958ecf793a93dce`.
+- Latest production deployment remains the 15 November 2026 deployment of checkpoint `6af96eb9b058cc2c703a1dae`.
+- Latest Base44 checkpoint: `6af97b33b7c02fc06d03ee30` (not yet deployed).
+- Latest Base44 source commit: `df895aabdff6f28048b99dcb0fcefaebf291010d`.
 - `npm run lint` passed.
 - `npm run audit:security` passed all six static checks.
 - `npm run build` passed.
@@ -63,8 +63,8 @@ _Last updated: 15 November 2026 (latest source sync)_
 5. Test protected server functions against unauthenticated and cross-user requests.
 6. Browser-test India location search, manual coordinates, and language switching.
 7. Review Nominatim usage-policy compliance and decide whether to add a controlled geocoding proxy/provider.
-8. Keep the `app/` source export synchronized with Base44 after future code changes; this is a snapshot, not an automatic two-way sync.
-9. Independently clean-build the exported GitHub `app/` folder and verify the latest sync commit.
+8. Independently clean-build the exported GitHub `app/` folder and verify the latest sync commit.
+9. Deploy the latest Base44 checkpoint only after reviewing the preview and confirming readiness.
 
 ## Design status
 A Figma file has been created with an editable TerraShift AI dashboard frame and reusable KPI card component. Climate Explorer was the next planned design screen but has not yet been recorded as completed.
