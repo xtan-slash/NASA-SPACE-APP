@@ -21,7 +21,9 @@ The runnable app is hosted in Base44 and built with TanStack Start, React 19, an
 - Deterministic scoring across soil, water, climate, and crop diversity.
 - Scenario simulator, comparison view, methodology page, and evidence-grounded AI advisor.
 - English, Hindi, and Kannada language options.
-- Sign-in, registration, password reset, MFA routes, signed-in app gate, and owner-based data access rules.
+- Sign-in, registration, password reset, MFA routes, signed-in app gate, and creator-only private records.
+- Private per-account UserCrop overrides, account-specific active-farm selection, and a private Harohalli demo-farm copy seeded when each account loads its farm list.
+- Public read-only demonstration routes, including Judge Mode, isolated from private workspace records.
 
 **Base44 app:** https://app.base44.com/apps/6af80c5819da5107aefce1e2/editor/preview
 
@@ -47,7 +49,7 @@ The deterministic scoring engine is documented in [scoring methodology](docs/sco
 ## Security and account model
 Farm, Scenario, and ClimateSnapshot records use owner/admin access rules. The shared Crop library remains publicly readable, while crop create/update/delete are admin-only. The app's protected workspace requires sign-in; climate loading and AI scenario explanation backend functions require an authenticated user.
 
-See [security and authentication](docs/security-and-authentication.md). The implementation has passed lint/build, but a fresh security scan and multi-user/anonymous access tests remain outstanding. Do not treat the configuration as independently security-audited.
+See [security and authentication](docs/security-and-authentication.md). The latest static security audit, lint, and production build pass. Live anonymous and two-account authorization tests remain outstanding, so do not treat the configuration as independently security-audited.
 
 ## Documentation
 - [System architecture](docs/architecture.md)
@@ -61,7 +63,7 @@ See [security and authentication](docs/security-and-authentication.md). The impl
 Figma product UI: https://www.figma.com/design/vm1vpLWyygL4nhNInOjrwK
 
 ## Repository scope
-The full tracked application source has now been exported from the Base44 workspace into [`app/`](app/), including routes, components, scoring and data logic, Base44 entity schemas, configuration, and the dependency lockfile. Generated build output, installed dependencies, local app-link metadata, and secrets are excluded. The repository root retains the challenge and project documentation. This is a source snapshot, not an automatic two-way sync with Base44.
+The full tracked application source is mirrored from the Base44 workspace into [`app/`](app/), including routes, components, scoring and data logic, translation dictionaries, Base44 entity schemas, configuration, and the dependency lockfile. This snapshot was refreshed on 15 November 2026 after the latest deployed changes. Generated build output, installed dependencies, local app-link metadata, and secrets are excluded. The repository root retains the challenge and project documentation. This is a source snapshot, not an automatic two-way sync with Base44.
 
 ## Local event
 Harohalli local event: https://www.spaceappschallenge.org/2026/local-events/harohalli/
