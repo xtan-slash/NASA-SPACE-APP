@@ -161,7 +161,7 @@ export default function ScorePanel({ result, scenarioName, onSave, saving, canSa
             <p className="text-[12.5px] font-medium">{t("Season by season")}</p>
             <span className="kicker">0–100</span>
           </div>
-          <div className="mt-2 overflow-x-auto">
+          <div className="mt-2 hidden overflow-x-auto sm:block">
             <table className="w-full min-w-[420px] text-[11px]">
               <thead>
                 <tr className="border-b border-border/70 text-left text-muted-foreground">
@@ -196,6 +196,27 @@ export default function ScorePanel({ result, scenarioName, onSave, saving, canSa
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="grid gap-2 p-3 sm:hidden">
+            {result.years.map((y) => (
+              <article key={`${y.year}-${y.season}`} className="rounded-lg border border-border/70 bg-card p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground">{y.year} {y.season_label}</p>
+                    <p className="mt-0.5 truncate text-[12px] font-medium">{y.crop_name}</p>
+                  </div>
+                  <span className="metric shrink-0 text-[12px] font-semibold">{y.season_total == null ? "—" : y.season_total.toFixed(0)}</span>
+                </div>
+                <div className="mt-2 grid grid-cols-3 gap-2 border-t border-border/60 pt-2">
+                  {["soil", "water", "climate"].map((k) => (
+                    <div key={k}>
+                      <p className="text-[9.5px] text-muted-foreground">{t(SHORT[k])}</p>
+                      <p className="metric mt-0.5 text-[11px]">{y.scores[k] == null ? "—" : y.scores[k].toFixed(0)}</p>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       )}
