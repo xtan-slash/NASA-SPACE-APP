@@ -1,6 +1,6 @@
 # TerraShift AI — Project Status
 
-_Last updated: 15 November 2026_
+_Last updated: 15 November 2026 (latest source sync)_
 
 ## Product snapshot
 - **Challenge:** NASA Space Apps Challenge 2026, Field Shift: Adapting Farms with NASA Data.
@@ -29,6 +29,12 @@ _Last updated: 15 November 2026_
 - Public read-only demo routes, including Judge Mode, using fixed sample data.
 - Account-specific active-farm selection and per-account private Harohalli demo-farm seeding.
 - Hindi and Kannada translations for the AI Advisor, including language-aware AI-generated explanations.
+- India mainland bounding-box validation for farm coordinates and NASA POWER requests (not a precise coastline/island landmask).
+- NASA POWER fill-value hardening: missing and `-999` measurements are excluded from derived counts and coverage.
+- Rotation diversity logic that skips empty/fallow season gaps and applies legume carryover only across adjacent crop seasons.
+- Zero-total scenario weights rejected; invalid scenarios do not receive an overall score.
+- Landing hero location preview slider with sample Indian coordinates and a coordinate-query prompt.
+- Mobile card layouts for multi-year score comparisons and simulator season-by-season breakdowns.
 
 ## Latest deployed and validated state
 - Latest deployment: 15 November 2026.
@@ -37,7 +43,7 @@ _Last updated: 15 November 2026_
 - `npm run lint` passed.
 - `npm run audit:security` passed all six static checks.
 - `npm run build` passed.
-- Latest code changes include Hindi/Kannada AI Advisor translations, language-aware model responses, per-account Harohalli demo-farm seeding, active-farm reload, Method page back navigation, and account-boundary disclosures.
+- Latest validation includes the coordinate, missing-data, fallow-gap and zero-weight edge cases, plus landing-page preview and mobile layout changes. The six static checks, lint and build pass on the latest checkpoint. The checkpoint is not yet deployed to production.
 
 ## Demonstration and data limitations
 - NASA POWER history shown in the prototype is 2020–2025, not a 2026–2029 forecast.
